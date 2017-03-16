@@ -13,5 +13,51 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{3036eb64-fee8-46d3-9ff1-f0fabb628795}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windowing">
+      <UniqueIdentifier>{47b7f11d-2844-46b9-87fc-460ebe451d6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Chat Windows">
+      <UniqueIdentifier>{f406db6f-72fc-4955-9fb9-81b6ce4fb67d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windowing">
+      <UniqueIdentifier>{852b9e05-317b-4e77-aa5d-61710590367d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Chat Windows">
+      <UniqueIdentifier>{bee9f72c-df6a-41fc-9893-27ce44d8b873}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CustomWindow.cpp">
+      <Filter>Source Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatPanel.cpp">
+      <Filter>Source Files\Chat Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Types.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPtr.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomWindow.h">
+      <Filter>Header Files\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatPanel.h">
+      <Filter>Header Files\Chat Windows</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
