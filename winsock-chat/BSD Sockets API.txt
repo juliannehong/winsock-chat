@@ -1,0 +1,44 @@
+Quick overview of creating client/server sockets in Berkely Sockets.
+
+Creating a Client socket:
+
+1). Create a socket handle with the socket() function. This takes an address family, a socket type, and a protocol.
+
+	Address families are the type of address (e.g IPv4, IPv6, ARPANET, AppleTalk, NetBIOS, etc.)
+
+	Socket types are the transmission kind (e.g reliable stream of bytes, unreliable messages, reliable messages, raw data, and packet sequence).
+
+	Protocol specifies a protocol to use in the underlying transmission layer (e.g. UDP, ICMP, TCP, Raw IP, etc.)
+
+2). Create an address specifying the remote target and the remote port to connect to.
+
+	The address on the remote machine must be listening for connections. Otherwise the connection will be terminated.
+
+3). Connect the socket to the remote using the connect() function. The address parameter is a generic structure meant to represent multiple kinds of addresses.
+
+	The address type used for IPv4 is sockaddr_in. The type for IPv6 is sockaddr_in6. These address types can be used directly and cast to the sockaddr type.
+
+4). Read/Write to the socket.
+
+
+Creating a server socket:
+
+1). Create a socket handle with the socket() function, same as above.
+
+2). Bind the socket to a port on the local machine with the bind() function. This function takes a socket handle and the address to bind it to.
+	
+	The address used here is the same type as in connect() (step 3 of client connections). The IP address of the struct can be set to INADDR_ANY to select the 
+	local address. The port, however, must be the defined port used to initiate connections.
+
+3). Convert the socket to a listener using the listen() function. This function takes a socket handle and an integer specifying how many pending connections will 
+	be allowed.
+
+4). Wait for a connection to appear at the socket. You can do this via select() or WSAEventSelect().
+
+	WSAEventSelect() is preferable as you can wait on the event object with WaitForSingleObject()/WaitForMultipleObjects() whenever you like, as opposed to 
+	select() which immediately blocks.
+
+5). Accept the connection using accept(). This function will return a new socket for all I/O operations, and will return the remote address that connected in 
+	its second and third parameters.
+
+6). Read/Write to the socket returned by accept().
