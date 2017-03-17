@@ -39,6 +39,6 @@ Creating a server socket:
 	select() which immediately blocks.
 
 5). Accept the connection using accept(). This function will return a new socket for all I/O operations, and will return the remote address that connected in 
-	its second and third parameters.
+	its second and third parameters. The third parameter must be the size of the address parameter, in bytes, when the function is called.
 
 6). Read/Write to the socket returned by accept().

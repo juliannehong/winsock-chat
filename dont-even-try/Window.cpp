@@ -15,14 +15,19 @@ CWindow * CWindow::GetClassPointer()
 	return (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
-bool CWindow::SaveClassPointerToWindow()
+bool CWindow::SaveClassPointerToWindow(HWND Window = nullptr)
 {
-	if(hwnd == nullptr)
+	if(Window == nullptr)
 	{
-		return false;
+		if(hwnd == nullptr)
+		{
+			return false;
+		}
+		Window = hwnd;
 	}
 	AddRef();
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(this));
+	SetWindowLongPtr(Window, GWLP_USERDATA, (LONG_PTR)(this));
+	mustrelease = true;
 	return true;
 }
 

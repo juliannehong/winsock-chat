@@ -9,7 +9,7 @@ class CWindow : public CObject
 protected:
 	HWND GetWindowHandle();
 	CWindow* GetClassPointer();
-	bool SaveClassPointerToWindow();
+	bool SaveClassPointerToWindow(HWND hwnd = nullptr);
 	virtual bool CreateWindowHandle(HWND &hWindow, HWND parent) = 0;
 	virtual bool DestroyWindowHandle(HWND hWindow) = 0;
 	virtual bool ResizeChildWindows(RECT NewSize) = 0;

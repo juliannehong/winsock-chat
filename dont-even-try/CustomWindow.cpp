@@ -5,26 +5,37 @@
 LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	CObjectPtr<CCustomWindow> ccw = (CCustomWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	switch(msg)
+	{
+	case WM_NCCREATE:
+		{
+			LPCREATESTRUCT cs = (LPCREATESTRUCT)lparam;
+			ccw = (CCustomWindow*)cs->lpCreateParams;
+			if(!ccw->SaveClassPointerToWindow(hwnd))
+			{
+				return FALSE;
+			}
+			return FALSE;
+		}
 
+	}
 }
 
 bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 {
+	TCHAR defaultname[32] = { 0 };
 	hwnd = nullptr;
 	//Register the window class associated with this custom window.
-	WNDCLASSEX wcx;
+	WNDCLASSEX wcx = { 0 };
 	wcx.cbSize = sizeof(wcx);
+	InitializeWindowClass(&wcx);
 	wcx.cbWndExtra = sizeof(this);
-	wcx.cbClsExtra = 0;
-	wcx.hInstance = GetModuleHandle(nullptr); //This executable module.
 	wcx.lpfnWndProc = CCustomWindow::WndProc;
-	wcx.lpszMenuName = nullptr;
-	wcx.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
-	wcx.hbrBackground = GetSysColorBrush(COLOR_WINDOW);
-	wcx.lpszClassName = GetClassNameString();
-	wcx.hIcon = GetLargeIcon();
-	wcx.hIconSm = GetSmallIcon();
-	wcx.hCursor = GetCursorIcon();
+	wcx.style |= (CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW);
+	if(wcx.lpszClassName == nullptr)
+	{
+		wcx.lpszClassName = defaultname;
+	}
 	wndclass = RegisterClassEx(&wcx);
 	if(wndclass == 0)
 	{
@@ -38,8 +49,8 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 						  0, 0,
 						  0, 0,
 						  parent,
-						  GetMenuHandle(),
-						  GetModuleHandle(nullptr),
+						  nullptr,
+						  wcx.hInstance,
 						  (LPVOID)this);
 	if(hwnd == nullptr)
 	{
@@ -59,6 +70,11 @@ bool CCustomWindow::DestroyWindowHandle(HWND hwnd)
 		return false;
 	}
 	return true;
+}
+
+bool CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	return false;
 }
 
 CCustomWindow::CCustomWindow()
