@@ -15,7 +15,18 @@ CWindow * CWindow::GetClassPointer()
 	return (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
-CWindow::CWindow() : hwnd(nullptr)
+bool CWindow::SaveClassPointerToWindow()
+{
+	if(hwnd == nullptr)
+	{
+		return false;
+	}
+	AddRef();
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(this));
+	return true;
+}
+
+CWindow::CWindow() : hwnd(nullptr), mustrelease(false)
 {
 }
 
@@ -28,15 +39,26 @@ CWindow::~CWindow()
 	}
 }
 
-bool CWindow::Create()
+bool CWindow::Create(CWindow* parent)
 {
-	if(!CreateWindowHandle(hwnd))
+	HWND parenthwnd = nullptr;
+	if(parent)
 	{
-		hwnd = nullptr;
+		parenthwnd = parent->GetWindowHandle();
+	}
+	if(!CreateWindowHandle(hwnd, parenthwnd))
+	{
+		if(mustrelease)
+		{
+			if(hwnd)
+			{
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+				hwnd = nullptr;
+			}
+			Release();
+		}
 		return false;
 	}
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(this));
-	AddRef();
 	ShowWindow(hwnd, SW_RESTORE);
 	UpdateWindow(hwnd);
 	return true;
@@ -44,25 +66,27 @@ bool CWindow::Create()
 
 bool CWindow::Destroy()
 {
-	if(!DestroyWindow(hwnd))
+	if(!DestroyWindowHandle(hwnd))
 	{
 		return false;
 	}
 	hwnd = nullptr;
-	//Release the reference held by the window handle.
+	//Release the reference to this object held by the window handle.
 	Release();
 	return true;
 }
 
 bool CWindow::OnResize(RECT NewSize)
 {
-	//parent window has been resized - we need to resize our child controls.
+	//We've been resized. change the dimensions of the window.
 	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
-	return true;
+	//now resize any child windows contained by this window.
+	return ResizeChildWindows(NewSize);
 }
 
 bool CWindow::OnMove(RECT NewPosition)
 {
+	//move the window to the new position.
 	SetWindowPos(hwnd, nullptr, NewPosition.left, NewPosition.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	return true;
 }
