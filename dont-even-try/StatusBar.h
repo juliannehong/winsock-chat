@@ -1,11 +1,10 @@
 #pragma once
-#include "Window.h"
-
+#include "StandardWindow.h"
 class CStatusBar :
-	public CWindow
+	public CStandardWindow
 {
 
-	bool CreateWindowHandle(HWND &hwnd, HWND parent);
+	bool InitializeCreateStruct(LPCREATESTRUCT cs);
 
 public:
 	CStatusBar();

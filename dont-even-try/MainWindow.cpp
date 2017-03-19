@@ -48,7 +48,17 @@ bool CMainWindow::CreateChildWindows(HWND hwnd)
 
 bool CMainWindow::ResizeChildWindows(RECT NewSize)
 {
-	return (cp->Resize(NewSize) && stat->Resize(NewSize));
+	SIZE nsz;
+	nsz.cx = NewSize.right - NewSize.left;
+	nsz.cy = NewSize.bottom - NewSize.top - (stat->GetHeight());
+	cp->Resize(nsz);
+	POINT np;
+	np.x = NewSize.left;
+	np.y = nsz.cy;
+	nsz.cy = stat->GetHeight();
+	stat->Move(np);
+	stat->Resize(nsz);
+	return true;
 }
 
 CMainWindow::CMainWindow() : 

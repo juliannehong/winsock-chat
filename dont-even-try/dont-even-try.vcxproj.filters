@@ -31,14 +31,20 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{e6876886-9803-4144-a378-30c26f10ff93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Windowing\Framework">
+      <UniqueIdentifier>{3c364812-7c62-4338-bda7-78c66110c88e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windowing\Standard Windows">
+      <UniqueIdentifier>{31994625-00ca-44be-b0d5-c86e04b6aae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windowing\Framework">
+      <UniqueIdentifier>{539ca65b-ed0a-459c-9ee3-64b62a7fbd5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windowing\Standard Windows">
+      <UniqueIdentifier>{442a5a0c-1e66-493c-ac5f-7603d687ca68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CustomWindow.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
     <ClCompile Include="ChatPanel.cpp">
       <Filter>Source Files\Chat Windows</Filter>
     </ClCompile>
@@ -48,11 +54,20 @@
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files\Chat Windows</Filter>
     </ClCompile>
-    <ClCompile Include="StatusBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Win32.cpp">
       <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomWindow.cpp">
+      <Filter>Source Files\Windowing\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardWindow.cpp">
+      <Filter>Source Files\Windowing\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Windowing\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="StatusBar.cpp">
+      <Filter>Source Files\Windowing\Standard Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -65,23 +80,26 @@
     <ClInclude Include="Object.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files\Windowing</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomWindow.h">
-      <Filter>Header Files\Windowing</Filter>
-    </ClInclude>
     <ClInclude Include="ChatPanel.h">
       <Filter>Header Files\Chat Windows</Filter>
     </ClInclude>
     <ClInclude Include="MainWindow.h">
       <Filter>Header Files\Chat Windows</Filter>
     </ClInclude>
-    <ClInclude Include="StatusBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Win32.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardWindow.h">
+      <Filter>Header Files\Windowing\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files\Windowing\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomWindow.h">
+      <Filter>Header Files\Windowing\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusBar.h">
+      <Filter>Header Files\Windowing\Standard Windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "ObjectPtr.h"
 #include "Win32.h"
 
 class CWindow : public CObject
@@ -18,7 +19,14 @@ public:
 
 	bool Create(HWND parent = nullptr);
 
-	bool Resize(RECT NewSize);
+	bool Resize(SIZE NewSize);
 
+	bool Move(POINT NewPosition);
+
+	U32 GetWidth() const;
+	U32 GetHeight() const;
+
+	U32 GetXPosition() const;
+	U32 GetYPosition() const;
 };
 

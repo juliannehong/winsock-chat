@@ -15,22 +15,6 @@ CWindow * CWindow::GetClassPointer()
 	return (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
-bool CWindow::SaveClassPointerToWindow(HWND Window)
-{
-	if(Window == nullptr)
-	{
-		if(hwnd == nullptr)
-		{
-			return false;
-		}
-		Window = hwnd;
-	}
-	AddRef();
-	SetWindowLongPtr(Window, GWLP_USERDATA, (LONG_PTR)(this));
-	mustrelease = true;
-	return true;
-}
-
 CWindow::CWindow() : hwnd(nullptr), mustrelease(false)
 {
 }
@@ -48,15 +32,6 @@ bool CWindow::Create(HWND parent)
 {
 	if(!CreateWindowHandle(hwnd, parent))
 	{
-		if(mustrelease)
-		{
-			if(hwnd)
-			{
-				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-				hwnd = nullptr;
-			}
-			Release();
-		}
 		return false;
 	}
 	ShowWindow(hwnd, SW_RESTORE);
@@ -64,10 +39,45 @@ bool CWindow::Create(HWND parent)
 	return true;
 }
 
-bool CWindow::Resize(RECT NewSize)
+bool CWindow::Resize(SIZE NewSize)
 {
-	//We've been resized. change the dimensions of the window.
-	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
+	//Change the dimensions of the window.
+	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.cx, NewSize.cy, SWP_NOZORDER | SWP_NOMOVE);
 	return true;
+}
+
+bool CWindow::Move(POINT NewPosition)
+{
+	//Change the coordinates of the window.
+	SetWindowPos(hwnd, nullptr, NewPosition.x, NewPosition.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	return true;
+}
+
+U32 CWindow::GetWidth() const
+{
+	RECT r;
+	GetWindowRect(hwnd, &r);
+	return r.right - r.left;
+}
+
+U32 CWindow::GetHeight() const
+{
+	RECT r;
+	GetWindowRect(hwnd, &r);
+	return r.bottom - r.top;
+}
+
+U32 CWindow::GetXPosition() const
+{
+	RECT r;
+	GetWindowRect(hwnd, &r);
+	return r.left;
+}
+
+U32 CWindow::GetYPosition() const
+{
+	RECT r;
+	GetWindowRect(hwnd, &r);
+	return r.top;
 }
 
