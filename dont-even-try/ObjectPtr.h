@@ -6,7 +6,7 @@
 template<typename T>
 class CObjectPtr
 {
-	static_assert(std::is_base_of<T, CObject>::value, "T must derive from CObject!");
+	static_assert(std::is_base_of<CObject, T>::value, "T must derive from CObject!");
 
 	T* pObject;
 public:
@@ -114,5 +114,9 @@ public:
 		return pObject != pOther.pObject;
 	}
 
+	operator bool()
+	{
+		return pObject != nullptr;
+	}
 };
 

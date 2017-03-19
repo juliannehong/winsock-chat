@@ -39,6 +39,12 @@
     <ClCompile Include="ChatPanel.cpp">
       <Filter>Source Files\Chat Windows</Filter>
     </ClCompile>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -58,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="ChatPanel.h">
       <Filter>Header Files\Chat Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="MainWindow.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

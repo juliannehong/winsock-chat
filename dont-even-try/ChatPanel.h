@@ -3,6 +3,11 @@
 class CChatPanel :
 	public CCustomWindow
 {
+	bool InitializeWindowClass(LPWNDCLASSEX wcx);
+	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
+	bool ResizeChildWindows(RECT NewSize);
+	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 public:
 	CChatPanel();
 	~CChatPanel();

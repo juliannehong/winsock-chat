@@ -15,7 +15,7 @@ CWindow * CWindow::GetClassPointer()
 	return (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
-bool CWindow::SaveClassPointerToWindow(HWND Window = nullptr)
+bool CWindow::SaveClassPointerToWindow(HWND Window)
 {
 	if(Window == nullptr)
 	{
@@ -44,14 +44,9 @@ CWindow::~CWindow()
 	}
 }
 
-bool CWindow::Create(CWindow* parent)
+bool CWindow::Create(HWND parent)
 {
-	HWND parenthwnd = nullptr;
-	if(parent)
-	{
-		parenthwnd = parent->GetWindowHandle();
-	}
-	if(!CreateWindowHandle(hwnd, parenthwnd))
+	if(!CreateWindowHandle(hwnd, parent))
 	{
 		if(mustrelease)
 		{
@@ -69,22 +64,10 @@ bool CWindow::Create(CWindow* parent)
 	return true;
 }
 
-bool CWindow::Destroy()
-{
-	if(!DestroyWindowHandle(hwnd))
-	{
-		return false;
-	}
-	hwnd = nullptr;
-	//Release the reference to this object held by the window handle.
-	Release();
-	return true;
-}
-
 bool CWindow::OnResize(RECT NewSize)
 {
 	//We've been resized. change the dimensions of the window.
-	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
+	//SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
 	//now resize any child windows contained by this window.
 	return ResizeChildWindows(NewSize);
 }

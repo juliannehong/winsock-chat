@@ -11,13 +11,23 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		{
 			LPCREATESTRUCT cs = (LPCREATESTRUCT)lparam;
 			ccw = (CCustomWindow*)cs->lpCreateParams;
-			if(!ccw->SaveClassPointerToWindow(hwnd))
-			{
-				return FALSE;
-			}
-			return FALSE;
+			ccw->AddRef();
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)ccw.GetInterface());
+			return TRUE;
 		}
-
+	case WM_NCDESTROY:
+		{
+			//remove the pointer.
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+			ccw->Release();
+			return 0;
+		}
+	default:
+		if(ccw)
+		{
+			return ccw->HandleMessage(hwnd, msg, wparam, lparam);
+		}
+		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
 }
 
@@ -29,12 +39,15 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 	WNDCLASSEX wcx = { 0 };
 	wcx.cbSize = sizeof(wcx);
 	InitializeWindowClass(&wcx);
-	wcx.cbWndExtra = sizeof(this);
+	if(wcx.hInstance == nullptr)
+	{
+		wcx.hInstance = GetModuleHandle(nullptr);
+	}
 	wcx.lpfnWndProc = CCustomWindow::WndProc;
 	wcx.style |= (CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW);
 	if(wcx.lpszClassName == nullptr)
 	{
-		wcx.lpszClassName = defaultname;
+		return false;
 	}
 	wndclass = RegisterClassEx(&wcx);
 	if(wndclass == 0)
@@ -42,16 +55,26 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 		return 0;
 	}
 	//we have a window class - now create the main window.
-	hwnd = CreateWindowEx(GetExtendedWindowStyle(), 
-						  (LPCWSTR)(0l | wndclass),
-						  GetInitialWindowTitle(),
-						  GetWindowStyle() | (parent != nullptr) ? WS_CHILD : 0,
-						  0, 0,
-						  0, 0,
-						  parent,
-						  nullptr,
-						  wcx.hInstance,
-						  (LPVOID)this);
+	CREATESTRUCT cs = { 0 };
+	cs.hwndParent = parent;
+	InitializeWindowCreateStruct(&cs);
+	cs.hInstance = wcx.hInstance;
+	cs.lpCreateParams = this;
+	if(parent != nullptr)
+	{
+		cs.style |= WS_CHILD;
+	}
+	cs.lpszClass = (LPCWSTR)((UINT_PTR)0 | wndclass);
+	hwnd = CreateWindowEx(cs.dwExStyle,
+						  cs.lpszClass,
+						  cs.lpszName,
+						  cs.style,
+						  cs.x, cs.y,
+						  cs.cx, cs.cy,
+						  cs.hwndParent,
+						  cs.hMenu,
+						  cs.hInstance,
+						  cs.lpCreateParams);
 	if(hwnd == nullptr)
 	{
 		return false;
@@ -59,22 +82,33 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 	return true;
 }
 
-bool CCustomWindow::DestroyWindowHandle(HWND hwnd)
+LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	if(hwnd == nullptr)
+	switch(msg)
 	{
-		return false;
+	case WM_CREATE:
+		{
+			if(!CreateChildWindows(hwnd))
+			{
+				return FALSE;
+			}
+			return TRUE;
+		}
+	case WM_SIZE:
+		{
+			RECT newsz;
+			GetClientRect(hwnd, &newsz);
+			OnResize(newsz);
+			return 0;
+		}
+	default:
+		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
-	if(!DestroyWindow(hwnd))
-	{
-		return false;
-	}
-	return true;
 }
 
-bool CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+bool CCustomWindow::CreateChildWindows(HWND parent)
 {
-	return false;
+	return true;
 }
 
 CCustomWindow::CCustomWindow()

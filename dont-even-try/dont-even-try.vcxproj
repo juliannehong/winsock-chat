@@ -143,13 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ChatMain.cpp" />
     <ClCompile Include="ChatPanel.cpp" />
     <ClCompile Include="CustomWindow.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChatPanel.h" />
     <ClInclude Include="CustomWindow.h" />
+    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectPtr.h" />
     <ClInclude Include="Types.h" />
