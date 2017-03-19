@@ -64,17 +64,10 @@ bool CWindow::Create(HWND parent)
 	return true;
 }
 
-bool CWindow::OnResize(RECT NewSize)
+bool CWindow::Resize(RECT NewSize)
 {
 	//We've been resized. change the dimensions of the window.
-	//SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
-	//now resize any child windows contained by this window.
-	return ResizeChildWindows(NewSize);
-}
-
-bool CWindow::OnMove(RECT NewPosition)
-{
-	//move the window to the new position.
-	SetWindowPos(hwnd, nullptr, NewPosition.left, NewPosition.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.right - NewSize.left, NewSize.bottom - NewSize.top, SWP_NOZORDER | SWP_NOMOVE);
 	return true;
 }
+

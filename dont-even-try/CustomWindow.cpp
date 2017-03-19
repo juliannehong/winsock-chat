@@ -98,7 +98,7 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 		{
 			RECT newsz;
 			GetClientRect(hwnd, &newsz);
-			OnResize(newsz);
+			ResizeChildWindows(newsz);
 			return 0;
 		}
 	default:
@@ -108,6 +108,12 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 
 bool CCustomWindow::CreateChildWindows(HWND parent)
 {
+	return true;
+}
+
+bool CCustomWindow::ResizeChildWindows(RECT NewClientRect)
+{
+	//default has no child windows.
 	return true;
 }
 

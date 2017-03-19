@@ -14,6 +14,7 @@ protected:
 	virtual bool InitializeWindowClass(LPWNDCLASSEX wcx) = 0;
 	virtual bool InitializeWindowCreateStruct(LPCREATESTRUCT cs) = 0;
 	virtual bool CreateChildWindows(HWND parent);
+	virtual bool ResizeChildWindows(RECT NewClientRect);
 
 public:
 	CCustomWindow();

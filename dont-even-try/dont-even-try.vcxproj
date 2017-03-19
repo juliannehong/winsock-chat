@@ -147,6 +147,8 @@
     <ClCompile Include="ChatPanel.cpp" />
     <ClCompile Include="CustomWindow.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="StatusBar.cpp" />
+    <ClCompile Include="Win32.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,7 +157,9 @@
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectPtr.h" />
+    <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="Win32.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

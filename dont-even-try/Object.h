@@ -1,7 +1,6 @@
 #pragma once
 #include <atomic>
 #include <cassert>
-#include <Windows.h>
 #include "Types.h"
 
 class CObject

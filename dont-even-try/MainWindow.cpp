@@ -41,15 +41,19 @@ bool CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 bool CMainWindow::CreateChildWindows(HWND hwnd)
 {
 	cp->Create(hwnd);
+	stat->Create(hwnd);
+
 	return true;
 }
 
 bool CMainWindow::ResizeChildWindows(RECT NewSize)
 {
-	return cp->OnResize(NewSize);
+	return (cp->Resize(NewSize) && stat->Resize(NewSize));
 }
 
-CMainWindow::CMainWindow() : cp(new CChatPanel(), true)
+CMainWindow::CMainWindow() : 
+	cp(new CChatPanel(), true),
+	stat(new CStatusBar(), true)
 {
 }
 
