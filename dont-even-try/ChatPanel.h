@@ -5,7 +5,7 @@ class CChatPanel :
 {
 	bool InitializeWindowClass(LPWNDCLASSEX wcx);
 	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
-	bool ResizeChildWindows(RECT NewSize);
+	void ResizeChildWindows(RECT NewSize);
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 public:

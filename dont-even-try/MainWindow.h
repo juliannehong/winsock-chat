@@ -14,8 +14,9 @@ class CMainWindow :
 	bool InitializeWindowClass(LPWNDCLASSEX wcx);
 	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 	bool CreateChildWindows(HWND parent);
-	bool ResizeChildWindows(RECT NewSize);
+	void ResizeChildWindows(RECT NewSize);
 
+	void OnMenuItem(U32 MenuItemID, bool IsAccelerator);
 public:
 	CMainWindow();
 	~CMainWindow();

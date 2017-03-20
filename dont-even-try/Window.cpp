@@ -6,16 +6,28 @@ HWND CWindow::GetWindowHandle()
 	return hwnd;
 }
 
-CWindow * CWindow::GetClassPointer()
+CObjectPtr<CWindow> CWindow::GetClassPointer(HWND hwnd)
 {
 	if(hwnd == nullptr)
 	{
 		return nullptr;
 	}
-	return (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	return CObjectPtr<CWindow>((CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 }
 
-CWindow::CWindow() : hwnd(nullptr), mustrelease(false)
+void CWindow::SavePointerToHandle(HWND hwnd)
+{
+	AddRef();
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)this);
+}
+
+void CWindow::ClearPointerFromHandle(HWND hwnd)
+{
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+	Release();
+}
+
+CWindow::CWindow() : hwnd(nullptr)
 {
 }
 
@@ -39,18 +51,41 @@ bool CWindow::Create(HWND parent)
 	return true;
 }
 
-bool CWindow::Resize(SIZE NewSize)
+void CWindow::Resize(SIZE NewSize)
 {
 	//Change the dimensions of the window.
 	SetWindowPos(hwnd, nullptr, 0, 0, NewSize.cx, NewSize.cy, SWP_NOZORDER | SWP_NOMOVE);
-	return true;
 }
 
-bool CWindow::Move(POINT NewPosition)
+void CWindow::Move(POINT NewPosition)
 {
 	//Change the coordinates of the window.
 	SetWindowPos(hwnd, nullptr, NewPosition.x, NewPosition.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	return true;
+}
+
+void CWindow::Close()
+{
+	SendMessage(hwnd, WM_CLOSE, 0, 0);
+}
+
+U32 CWindow::GetMaxWidth() const
+{
+	return 0;
+}
+
+U32 CWindow::GetMaxHeight() const
+{
+	return 0;
+}
+
+U32 CWindow::GetMinWidth() const
+{
+	return 0;
+}
+
+U32 CWindow::GetMinHeight() const
+{
+	return 0;
 }
 
 U32 CWindow::GetWidth() const

@@ -11,15 +11,13 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		{
 			LPCREATESTRUCT cs = (LPCREATESTRUCT)lparam;
 			ccw = (CCustomWindow*)cs->lpCreateParams;
-			ccw->AddRef();
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)ccw.GetInterface());
+			ccw->SavePointerToHandle(hwnd);
 			return TRUE;
 		}
 	case WM_NCDESTROY:
 		{
 			//remove the pointer.
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-			ccw->Release();
+			ccw->ClearPointerFromHandle(hwnd);
 			return 0;
 		}
 	default:
@@ -108,21 +106,36 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 				CObjectPtr<CWindow> w = (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				OnChildNotify(w, HIWORD(wparam));
 			}
+			else
+			{
+				OnMenuItem(LOWORD(wparam), (bool)HIWORD(wparam));
+			}
+			return 0;
 		}
 	default:
 		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
 }
 
-bool CCustomWindow::CreateChildWindows(HWND parent)
+void CCustomWindow::OnChildNotify(CObjectPtr<CWindow> child, U32 NotificationCode)
 {
-	return true;
+	//default has no child windows.
 }
 
-bool CCustomWindow::ResizeChildWindows(RECT NewClientRect)
+void CCustomWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
+{
+	//default has no menu items.
+}
+
+bool CCustomWindow::CreateChildWindows(HWND parent)
 {
 	//default has no child windows.
 	return true;
+}
+
+void CCustomWindow::ResizeChildWindows(RECT NewClientRect)
+{
+	//default has no child windows.
 }
 
 CCustomWindow::CCustomWindow()

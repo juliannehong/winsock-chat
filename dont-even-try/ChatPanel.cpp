@@ -23,29 +23,15 @@ bool CChatPanel::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 	return true;
 }
 
-bool CChatPanel::ResizeChildWindows(RECT NewSize)
+void CChatPanel::ResizeChildWindows(RECT NewSize)
 {
-	return true;
+	
 }
 
 LRESULT CChatPanel::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch(msg)
 	{
-	case WM_COMMAND:
-		{
-			if(lparam)
-			{
-				//get the associated sub item.
-				
-				return 0;
-			}
-			else
-			{
-				//OnMenuItem(HIWORD(wparam), LOWORD(wparam));
-				return 0;
-			}
-		}
 	}
 	return CCustomWindow::HandleMessage(hwnd, msg, wparam, lparam);
 }

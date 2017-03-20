@@ -13,8 +13,10 @@ protected:
 
 	virtual bool InitializeWindowClass(LPWNDCLASSEX wcx) = 0;
 	virtual bool InitializeWindowCreateStruct(LPCREATESTRUCT cs) = 0;
+	virtual void OnChildNotify(CObjectPtr<CWindow> child, U32 NotificationCode);
+	virtual void OnMenuItem(U32 MenuItemID, bool IsAccelerator);
 	virtual bool CreateChildWindows(HWND parent);
-	virtual bool ResizeChildWindows(RECT NewClientRect);
+	virtual void ResizeChildWindows(RECT NewClientRect);
 
 public:
 	CCustomWindow();

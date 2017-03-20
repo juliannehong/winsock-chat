@@ -7,21 +7,31 @@
 class CWindow : public CObject
 {
 	HWND hwnd;
-	bool mustrelease;
 protected:
-	HWND GetWindowHandle();
-	CWindow* GetClassPointer();
-	bool SaveClassPointerToWindow(HWND hwnd = nullptr);
+	void SavePointerToHandle(HWND hwnd);
+	void ClearPointerFromHandle(HWND hwnd);
+
 	virtual bool CreateWindowHandle(HWND &hWindow, HWND parent) = 0;
 public:
 	CWindow();
 	virtual ~CWindow();
 
+	static CObjectPtr<CWindow> GetClassPointer(HWND hwnd);
+	
+	HWND GetWindowHandle();
+	
 	bool Create(HWND parent = nullptr);
 
-	bool Resize(SIZE NewSize);
+	void Resize(SIZE NewSize);
 
-	bool Move(POINT NewPosition);
+	void Move(POINT NewPosition);
+
+	void Close();
+
+	virtual U32 GetMaxWidth() const;
+	virtual U32 GetMaxHeight() const;
+	virtual U32 GetMinWidth() const;
+	virtual U32 GetMinHeight() const;
 
 	U32 GetWidth() const;
 	U32 GetHeight() const;

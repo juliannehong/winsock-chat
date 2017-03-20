@@ -1,11 +1,23 @@
 #include "MainWindow.h"
-
+#include "resource.h"
 
 
 LRESULT CMainWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch(msg)
 	{
+	case WM_GETMINMAXINFO:
+		{
+			LPMINMAXINFO mmi = (LPMINMAXINFO)lparam;
+			//go through each child window and find the max and min extents.
+			POINT max; POINT min;
+			max.x = cp->GetMaxWidth();
+			max.y = cp->GetMaxHeight();
+			min.x = cp->GetMinWidth();
+			min.y = cp->GetMinHeight();
+
+			return 0;
+		}
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		return 0;
@@ -23,6 +35,7 @@ bool CMainWindow::InitializeWindowClass(LPWNDCLASSEX wcx)
 	wcx->hIconSm = wcx->hIcon;
 	wcx->hCursor = LoadCursor(0, IDC_ARROW);
 	wcx->lpszClassName = L"MainWindow";
+	wcx->lpszMenuName = L"MainMenu";
 	return true;
 }
 
@@ -42,11 +55,10 @@ bool CMainWindow::CreateChildWindows(HWND hwnd)
 {
 	cp->Create(hwnd);
 	stat->Create(hwnd);
-
 	return true;
 }
 
-bool CMainWindow::ResizeChildWindows(RECT NewSize)
+void CMainWindow::ResizeChildWindows(RECT NewSize)
 {
 	SIZE nsz;
 	nsz.cx = NewSize.right - NewSize.left;
@@ -58,7 +70,27 @@ bool CMainWindow::ResizeChildWindows(RECT NewSize)
 	nsz.cy = stat->GetHeight();
 	stat->Move(np);
 	stat->Resize(nsz);
-	return true;
+}
+
+void CMainWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
+{
+	switch(MenuItemID)
+	{
+	case ID_FILE_EXIT:
+		Close();
+		break;
+	case ID_EDIT_CUT:
+	case ID_EDIT_COPY:
+	case ID_EDIT_PASTE:
+	case ID_EDIT_SETTINGS:
+	case ID_CONNECT_SERVER:
+	case ID_CONNECT_CLIENT:
+	case ID_CONNECT_CHANGEALIAS:
+	case ID_HELP_ABOUT:
+	default:
+		MessageBeep(0);
+		break;
+	}
 }
 
 CMainWindow::CMainWindow() : 

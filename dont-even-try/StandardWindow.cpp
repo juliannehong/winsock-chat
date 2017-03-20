@@ -37,8 +37,7 @@ bool CStandardWindow::CreateWindowHandle(HWND & hWindow, HWND parent)
 	}
 	//hook WM_NCDESTROY to remove our class pointer and drop the refcount.
 	//this way we won't leak resources.
-	SetWindowLongPtr(hWindow, GWLP_USERDATA, (LONG_PTR)this);
-	AddRef();
+	SavePointerToHandle(hWindow);
 	SetWindowSubclass(hWindow, CStandardWindow::SubclassProc, 0x10105050, 0);
 	return true;
 }
