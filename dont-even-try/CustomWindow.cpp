@@ -101,6 +101,14 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 			ResizeChildWindows(newsz);
 			return 0;
 		}
+	case WM_COMMAND:
+		{
+			if(lparam)
+			{
+				CObjectPtr<CWindow> w = (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				OnChildNotify(w, HIWORD(wparam));
+			}
+		}
 	default:
 		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
