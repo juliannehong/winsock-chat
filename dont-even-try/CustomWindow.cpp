@@ -31,7 +31,6 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 
 bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 {
-	TCHAR defaultname[32] = { 0 };
 	hwnd = nullptr;
 	//Register the window class associated with this custom window.
 	WNDCLASSEX wcx = { 0 };
@@ -47,10 +46,9 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 	{
 		return false;
 	}
-	wndclass = RegisterClassEx(&wcx);
-	if(wndclass == 0)
+	if(!RegisterClassEx(&wcx))
 	{
-		return 0;
+		return false;
 	}
 	//we have a window class - now create the main window.
 	CREATESTRUCT cs = { 0 };
@@ -62,7 +60,7 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 	{
 		cs.style |= WS_CHILD;
 	}
-	cs.lpszClass = (LPCWSTR)((UINT_PTR)0 | wndclass);
+	cs.lpszClass = wcx.lpszClassName;
 	hwnd = CreateWindowEx(cs.dwExStyle,
 						  cs.lpszClass,
 						  cs.lpszName,
@@ -75,6 +73,7 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 						  cs.lpCreateParams);
 	if(hwnd == nullptr)
 	{
+		UnregisterClass(wcx.lpszClassName, wcx.hInstance);
 		return false;
 	}
 	return true;
@@ -119,7 +118,7 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 
 void CCustomWindow::OnChildNotify(CObjectPtr<CWindow> child, U32 NotificationCode)
 {
-	//default has no child windows.
+	//default does nothing with any child windows we have.
 }
 
 void CCustomWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
@@ -129,13 +128,15 @@ void CCustomWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 
 bool CCustomWindow::CreateChildWindows(HWND parent)
 {
-	//default has no child windows.
-	return true;
+	//go over all child windows and create them.
 }
 
 void CCustomWindow::ResizeChildWindows(RECT NewClientRect)
 {
-	//default has no child windows.
+	//tell the layout engine to recompute the child window extents.
+
+	//Now go over each child window and update the size.
+
 }
 
 CCustomWindow::CCustomWindow()

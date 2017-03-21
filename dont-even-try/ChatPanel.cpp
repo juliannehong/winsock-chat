@@ -44,3 +44,13 @@ CChatPanel::CChatPanel()
 CChatPanel::~CChatPanel()
 {
 }
+
+U32 CChatPanel::GetMinWidth() const
+{
+	return 300;
+}
+
+U32 CChatPanel::GetMinHeight() const
+{
+	return 300;
+}

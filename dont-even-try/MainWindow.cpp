@@ -10,12 +10,15 @@ LRESULT CMainWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			LPMINMAXINFO mmi = (LPMINMAXINFO)lparam;
 			//go through each child window and find the max and min extents.
-			POINT max; POINT min;
-			max.x = cp->GetMaxWidth();
-			max.y = cp->GetMaxHeight();
-			min.x = cp->GetMinWidth();
-			min.y = cp->GetMinHeight();
-
+			POINT max = { 0 }; POINT min = { 0 };
+			for(U32 i = 0; i < GetNumChildWindows(); ++i)
+			{
+				CObjectPtr<CWindow> child = GetChildWindow(i);
+				max.x = cp->GetMaxWidth();
+				max.y = cp->GetMaxHeight();
+				min.x = cp->GetMinWidth();
+				min.y = cp->GetMinHeight();
+			}
 			return 0;
 		}
 	case WM_CLOSE:
@@ -43,7 +46,7 @@ bool CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 {
 	cs->lpszName = L"winsock-chat";
 	cs->dwExStyle = WS_EX_OVERLAPPEDWINDOW;
-	cs->style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX;
+	cs->style = WS_OVERLAPPEDWINDOW;
 	cs->x = CW_USEDEFAULT;
 	cs->y = 0;
 	cs->cx = 800;
@@ -53,8 +56,6 @@ bool CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 
 bool CMainWindow::CreateChildWindows(HWND hwnd)
 {
-	cp->Create(hwnd);
-	stat->Create(hwnd);
 	return true;
 }
 
@@ -97,6 +98,8 @@ CMainWindow::CMainWindow() :
 	cp(new CChatPanel(), true),
 	stat(new CStatusBar(), true)
 {
+	AddChildWindow(new CChatPanel());
+	AddChildWindow(new CStatusBar());
 }
 
 

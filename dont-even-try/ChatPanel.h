@@ -11,5 +11,8 @@ class CChatPanel :
 public:
 	CChatPanel();
 	~CChatPanel();
+
+	U32 GetMinWidth() const;
+	U32 GetMinHeight() const;
 };
 
