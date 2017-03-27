@@ -6,21 +6,6 @@ LRESULT CMainWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 {
 	switch(msg)
 	{
-	case WM_GETMINMAXINFO:
-		{
-			LPMINMAXINFO mmi = (LPMINMAXINFO)lparam;
-			//go through each child window and find the max and min extents.
-			POINT max = { 0 }; POINT min = { 0 };
-			for(U32 i = 0; i < GetNumChildWindows(); ++i)
-			{
-				CObjectPtr<CWindow> child = GetChildWindow(i);
-				max.x = cp->GetMaxWidth();
-				max.y = cp->GetMaxHeight();
-				min.x = cp->GetMinWidth();
-				min.y = cp->GetMinHeight();
-			}
-			return 0;
-		}
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		return 0;
@@ -56,7 +41,7 @@ bool CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 
 bool CMainWindow::CreateChildWindows(HWND hwnd)
 {
-	return true;
+	return cp->Create(hwnd) && stat->Create(hwnd);
 }
 
 void CMainWindow::ResizeChildWindows(RECT NewSize)
@@ -98,8 +83,8 @@ CMainWindow::CMainWindow() :
 	cp(new CChatPanel(), true),
 	stat(new CStatusBar(), true)
 {
-	AddChildWindow(new CChatPanel());
-	AddChildWindow(new CStatusBar());
+	//AddChildWindow(new CChatPanel(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_TOP | LATCH_PARENT_LEFT);
+	//AddChildWindow(new CStatusBar(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_LEFT | LATCH_PARENT_BOTTOM | FIXED_HEIGHT);
 }
 
 

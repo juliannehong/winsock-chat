@@ -63,53 +63,57 @@ void CWindow::Move(POINT NewPosition)
 	SetWindowPos(hwnd, nullptr, NewPosition.x, NewPosition.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 }
 
+void CWindow::ResizeAndMove(SIZE NewSize, POINT NewPosition)
+{
+}
+
 void CWindow::Close()
 {
 	SendMessage(hwnd, WM_CLOSE, 0, 0);
 }
 
-U32 CWindow::GetMaxWidth() const
+I32 CWindow::GetMaxWidth() const
 {
 	return 0;
 }
 
-U32 CWindow::GetMaxHeight() const
+I32 CWindow::GetMaxHeight() const
 {
 	return 0;
 }
 
-U32 CWindow::GetMinWidth() const
+I32 CWindow::GetMinWidth() const
 {
 	return 0;
 }
 
-U32 CWindow::GetMinHeight() const
+I32 CWindow::GetMinHeight() const
 {
 	return 0;
 }
 
-U32 CWindow::GetWidth() const
+I32 CWindow::GetWidth() const
 {
 	RECT r;
 	GetWindowRect(hwnd, &r);
 	return r.right - r.left;
 }
 
-U32 CWindow::GetHeight() const
+I32 CWindow::GetHeight() const
 {
 	RECT r;
 	GetWindowRect(hwnd, &r);
 	return r.bottom - r.top;
 }
 
-U32 CWindow::GetXPosition() const
+I32 CWindow::GetXPosition() const
 {
 	RECT r;
 	GetWindowRect(hwnd, &r);
 	return r.left;
 }
 
-U32 CWindow::GetYPosition() const
+I32 CWindow::GetYPosition() const
 {
 	RECT r;
 	GetWindowRect(hwnd, &r);

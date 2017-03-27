@@ -147,6 +147,7 @@
     <ClCompile Include="ChatPanel.cpp" />
     <ClCompile Include="CustomWindow.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="PanelContainer.cpp" />
     <ClCompile Include="StandardWindow.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Win32.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectPtr.h" />
+    <ClInclude Include="PanelContainer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StandardWindow.h" />
     <ClInclude Include="StatusBar.h" />
@@ -167,6 +169,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chat_w32.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Layout Engine design.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,18 +1,14 @@
 #pragma once
-#include "CustomWindow.h"
+#include "PanelContainer.h"
+
 class CChatPanel :
-	public CCustomWindow
+	public CPanelContainer
 {
-	bool InitializeWindowClass(LPWNDCLASSEX wcx);
-	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
-	void ResizeChildWindows(RECT NewSize);
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 public:
 	CChatPanel();
 	~CChatPanel();
 
-	U32 GetMinWidth() const;
-	U32 GetMinHeight() const;
 };
 

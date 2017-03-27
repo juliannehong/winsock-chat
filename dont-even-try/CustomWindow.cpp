@@ -128,15 +128,13 @@ void CCustomWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 
 bool CCustomWindow::CreateChildWindows(HWND parent)
 {
-	//go over all child windows and create them.
+	//no child windows by default.
+	return true;
 }
 
 void CCustomWindow::ResizeChildWindows(RECT NewClientRect)
 {
-	//tell the layout engine to recompute the child window extents.
-
-	//Now go over each child window and update the size.
-
+	//No resize logic is performed.
 }
 
 CCustomWindow::CCustomWindow()
