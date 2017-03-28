@@ -16,27 +16,29 @@ LRESULT CMainWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 	return CCustomWindow::HandleMessage(hwnd, msg, wparam, lparam);
 }
 
-bool CMainWindow::InitializeWindowClass(LPWNDCLASSEX wcx)
+LPTSTR CMainWindow::GetWindowClassName() const
 {
-	wcx->hbrBackground = GetSysColorBrush(COLOR_WINDOW);
-	wcx->hIcon = LoadIcon(0, IDI_APPLICATION);
-	wcx->hIconSm = wcx->hIcon;
-	wcx->hCursor = LoadCursor(0, IDC_ARROW);
-	wcx->lpszClassName = L"MainWindow";
-	wcx->lpszMenuName = L"MainMenu";
-	return true;
+	return TEXT("CMainWindow");
 }
 
-bool CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
+void CMainWindow::InitializeWindowClass(LPWNDCLASS wc)
 {
-	cs->lpszName = L"winsock-chat";
-	cs->dwExStyle = WS_EX_OVERLAPPEDWINDOW;
+	wc->hbrBackground = GetSysColorBrush(COLOR_WINDOW);
+	wc->hIcon = LoadIcon(0, IDI_APPLICATION);
+	wc->hCursor = LoadCursor(0, IDC_ARROW);
+	wc->lpszMenuName = TEXT("MainMenu");
+	wc->style = CS_HREDRAW | CS_VREDRAW;
+}
+
+void CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
+{
+	cs->lpszName = TEXT("winsock-chat");
+	cs->dwExStyle = 0;
 	cs->style = WS_OVERLAPPEDWINDOW;
 	cs->x = CW_USEDEFAULT;
 	cs->y = 0;
 	cs->cx = 800;
 	cs->cy = 600;
-	return true;
 }
 
 bool CMainWindow::CreateChildWindows(HWND hwnd)

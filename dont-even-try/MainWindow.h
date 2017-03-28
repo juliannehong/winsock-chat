@@ -11,8 +11,9 @@ class CMainWindow :
 	CObjectPtr<CStatusBar> stat;
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	bool InitializeWindowClass(LPWNDCLASSEX wcx);
-	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
+	LPTSTR GetWindowClassName() const;
+	void InitializeWindowClass(LPWNDCLASS wc);
+	void InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 	bool CreateChildWindows(HWND parent);
 	void ResizeChildWindows(RECT NewSize);
 

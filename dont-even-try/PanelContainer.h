@@ -5,12 +5,15 @@
 class CPanelContainer :
 	public CCustomWindow
 {
+	typedef CCustomWindow ParentClass;
 	std::vector<CObjectPtr<CWindow>> panels;
 
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	bool InitializeWindowClass(LPWNDCLASSEX wcx);
-	bool InitializeWindowCreateStruct(LPCREATESTRUCT cs);
+	LPTSTR GetWindowClassName() const;
+
+	void InitializeWindowClass(LPWNDCLASS wc);
+	void InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 
 public:
 	CPanelContainer();

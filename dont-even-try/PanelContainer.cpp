@@ -4,17 +4,23 @@
 
 LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	return LRESULT();
+	return ParentClass::HandleMessage(hwnd, msg, wparam, lparam);
 }
 
-bool CPanelContainer::InitializeWindowClass(LPWNDCLASSEX wcx)
+LPTSTR CPanelContainer::GetWindowClassName() const
 {
-	return false;
+	return TEXT("CPanelContainer");
 }
 
-bool CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
+void CPanelContainer::InitializeWindowClass(LPWNDCLASS wc)
 {
-	return false;
+	wc->hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wc->style = CS_DBLCLKS;
+}
+
+void CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
+{
+	cs->style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VSCROLL;
 }
 
 CPanelContainer::CPanelContainer()

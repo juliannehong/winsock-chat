@@ -4,7 +4,7 @@
 
 LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	CObjectPtr<CCustomWindow> ccw = (CCustomWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	CObjectPtr<CCustomWindow> ccw = CWindow::GetClassPointer(hwnd);
 	switch(msg)
 	{
 	case WM_NCCREATE:
@@ -17,6 +17,12 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 	case WM_NCDESTROY:
 		{
 			//remove the pointer.
+			if(!ccw)
+			{
+				//the pointer has been nulled before destroying the window. 
+				//This should never happen, and indicates a bug in our design.
+				__debugbreak();
+			}
 			ccw->ClearPointerFromHandle(hwnd);
 			return 0;
 		}
@@ -32,35 +38,32 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 {
 	hwnd = nullptr;
-	//Register the window class associated with this custom window.
-	WNDCLASSEX wcx = { 0 };
-	wcx.cbSize = sizeof(wcx);
-	InitializeWindowClass(&wcx);
-	if(wcx.hInstance == nullptr)
+	//Is the window class already registered?
+	WNDCLASS wc = { 0 };
+	if(!GetClassInfo(GetModuleHandle(nullptr), GetWindowClassName(), &wc))
 	{
-		wcx.hInstance = GetModuleHandle(nullptr);
-	}
-	wcx.lpfnWndProc = CCustomWindow::WndProc;
-	wcx.style |= (CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW);
-	if(wcx.lpszClassName == nullptr)
-	{
-		return false;
-	}
-	if(!RegisterClassEx(&wcx))
-	{
-		return false;
+		//Register the window class associated with this custom window.
+		wc.hInstance = GetModuleHandle(nullptr);
+		wc.lpszClassName = GetWindowClassName();
+		InitializeWindowClass(&wc);
+		wc.lpfnWndProc = CCustomWindow::WndProc;
+		if(RegisterClass(&wc) == 0)
+		{
+			return false;
+		}
 	}
 	//we have a window class - now create the main window.
 	CREATESTRUCT cs = { 0 };
 	cs.hwndParent = parent;
 	InitializeWindowCreateStruct(&cs);
-	cs.hInstance = wcx.hInstance;
+	cs.hInstance = wc.hInstance;
 	cs.lpCreateParams = this;
 	if(parent != nullptr)
 	{
 		cs.style |= WS_CHILD;
 	}
-	cs.lpszClass = wcx.lpszClassName;
+	cs.hwndParent = parent;
+	cs.lpszClass = wc.lpszClassName;
 	hwnd = CreateWindowEx(cs.dwExStyle,
 						  cs.lpszClass,
 						  cs.lpszName,
@@ -73,9 +76,10 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 						  cs.lpCreateParams);
 	if(hwnd == nullptr)
 	{
-		UnregisterClass(wcx.lpszClassName, wcx.hInstance);
+		//UnregisterClass(wc.lpszClassName, wc.hInstance);
 		return false;
 	}
+	//SetWindowText(hwnd, cs.lpszName);
 	return true;
 }
 
@@ -102,7 +106,7 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 		{
 			if(lparam)
 			{
-				CObjectPtr<CWindow> w = (CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				CObjectPtr<CWindow> w = CWindow::GetClassPointer(hwnd);
 				OnChildNotify(w, HIWORD(wparam));
 			}
 			else

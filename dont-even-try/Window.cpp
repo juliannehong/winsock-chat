@@ -1,5 +1,23 @@
 #include "Window.h"
 
+class CGlobalAtom
+{
+	ATOM a;
+public:
+
+	CGlobalAtom(LPTSTR String) : a(GlobalAddAtom(String)) {}
+	~CGlobalAtom()
+	{
+		GlobalDeleteAtom(a);
+	}
+
+	operator LPTSTR()
+	{
+		return (LPTSTR)a;
+	}
+};
+
+CGlobalAtom WindowBindingAtom(TEXT("CWindow::ClassStorageSlot"));
 
 HWND CWindow::GetWindowHandle()
 {
@@ -12,19 +30,37 @@ CObjectPtr<CWindow> CWindow::GetClassPointer(HWND hwnd)
 	{
 		return nullptr;
 	}
-	return CObjectPtr<CWindow>((CWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	return CObjectPtr<CWindow>((CWindow*)GetProp(hwnd, WindowBindingAtom));
 }
 
 void CWindow::SavePointerToHandle(HWND hwnd)
 {
-	AddRef();
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)this);
+	if(hwnd != nullptr)
+	{
+		AddRef();
+		SetProp(hwnd, WindowBindingAtom, this);
+	}
 }
 
 void CWindow::ClearPointerFromHandle(HWND hwnd)
 {
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-	Release();
+	if(hwnd != nullptr)
+	{
+		RemoveProp(hwnd, WindowBindingAtom);
+		Release();
+	}
+}
+
+CObjectPtr<CWindow> CWindow::GetClassPointerAndClear(HWND hwnd)
+{
+	if(hwnd == nullptr)
+	{
+		return nullptr;
+	}
+	CObjectPtr<CWindow> ret = (CWindow*)GetProp(hwnd, WindowBindingAtom);
+	RemoveProp(hwnd, WindowBindingAtom);
+	ret->Release();
+	return ret;
 }
 
 CWindow::CWindow() : hwnd(nullptr)

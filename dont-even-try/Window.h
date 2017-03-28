@@ -10,6 +10,7 @@ class CWindow : public CObject
 protected:
 	void SavePointerToHandle(HWND hwnd);
 	void ClearPointerFromHandle(HWND hwnd);
+	static CObjectPtr<CWindow> GetClassPointerAndClear(HWND hwnd);
 
 	virtual bool CreateWindowHandle(HWND &hWindow, HWND parent) = 0;
 public:
