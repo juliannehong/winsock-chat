@@ -15,6 +15,12 @@ class CPanelContainer :
 	void InitializeWindowClass(LPWNDCLASS wc);
 	void InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 
+	bool IsTrackingEnabled();
+	void StartTracking();
+	void StopTracking(bool DiscardChanges = false);
+
+	void RecomputeLayout();
+
 public:
 	CPanelContainer();
 	virtual ~CPanelContainer();

@@ -12,7 +12,8 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 			LPCREATESTRUCT cs = (LPCREATESTRUCT)lparam;
 			ccw = (CCustomWindow*)cs->lpCreateParams;
 			ccw->SavePointerToHandle(hwnd);
-			return TRUE;
+			//now forward it to the class.
+			break;
 		}
 	case WM_NCDESTROY:
 		{
@@ -24,15 +25,15 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 				__debugbreak();
 			}
 			ccw->ClearPointerFromHandle(hwnd);
+			//This is not forwarded - the class is no longer linked to a window.
 			return 0;
 		}
-	default:
-		if(ccw)
-		{
-			return ccw->HandleMessage(hwnd, msg, wparam, lparam);
-		}
-		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
+	if(ccw)
+	{
+		return ccw->HandleMessage(hwnd, msg, wparam, lparam);
+	}
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
