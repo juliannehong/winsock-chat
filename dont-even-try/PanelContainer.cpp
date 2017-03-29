@@ -53,20 +53,12 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			}
 			break; //pass it to the parent.
 		}
-	case WM_MOUSEMOVE:
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONDBLCLK:
-		break;
 	case WM_LBUTTONUP:
 		StopTracking();
 		return 0;
 	case WM_CANCELMODE:
 		StopTracking(true);
 		return 0;
-	case WM_KEYDOWN:
-	case WM_HSCROLL:
-	case WM_VSCROLL:
-		break;
 	case WM_NCCREATE:
 		{
 			// Remove WS_EX_CLIENTEDGE style from the parent - we take care of it.
@@ -76,13 +68,18 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 			return TRUE;
 		}
-	case WM_SYSCOMMAND:
-		break;
+	case WM_COMMAND:
+	case WM_NOTIFY:
+		//forward child panel notifications to the parent.
+		return SendMessage(GetParent(hwnd), msg, wparam, lparam);
 	case WM_DISPLAYCHANGE:
 	case WM_WININICHANGE:
 		//Display changed.
-
-
+		if(!IsIconic(hwnd) && IsWindowVisible(hwnd))
+		{
+			RecomputeLayout();
+		}
+		return 0;
 	case WM_PRINTCLIENT:
 		//paint the client window onto a predefined DC.
 		if(wparam == NULL)
@@ -91,8 +88,23 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 		}
 		DrawClientArea((HDC)wparam);
 		return 0;
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+		//mouse tracking.
+		break;
+	case WM_HSCROLL:
+	case WM_VSCROLL:
 	case WM_MOUSEWHEEL:
-		//Mouse wheel movement
+		//subwindow scrolling.
+		break;
+	case WM_SYSCOMMAND:
+		//Forward SC_SIZE to the parent.
+		if((wparam & 0xFFF0) == SC_SIZE)
+		{
+			return SendMessage(GetParent(hwnd), msg, wparam, lparam);
+		}
+		break;
 	}
 	return ParentClass::HandleMessage(hwnd, msg, wparam, lparam);
 }

@@ -21,6 +21,8 @@ class CPanelContainer :
 
 	void RecomputeLayout();
 
+	void DrawClientArea(HDC hdc);
+
 public:
 	CPanelContainer();
 	virtual ~CPanelContainer();
