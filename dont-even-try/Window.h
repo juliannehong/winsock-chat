@@ -10,6 +10,7 @@ class CWindow : public CObject
 protected:
 	void SavePointerToHandle(HWND hwnd);
 	void ClearPointerFromHandle(HWND hwnd);
+	static CObjectPtr<CWindow> GetClassPointerAndClear(HWND hwnd);
 
 	virtual bool CreateWindowHandle(HWND &hWindow, HWND parent) = 0;
 public:
@@ -23,20 +24,20 @@ public:
 	bool Create(HWND parent = nullptr);
 
 	void Resize(SIZE NewSize);
-
 	void Move(POINT NewPosition);
+	void ResizeAndMove(SIZE NewSize, POINT NewPosition);
 
 	void Close();
 
-	virtual U32 GetMaxWidth() const;
-	virtual U32 GetMaxHeight() const;
-	virtual U32 GetMinWidth() const;
-	virtual U32 GetMinHeight() const;
+	virtual I32 GetMaxWidth() const;
+	virtual I32 GetMaxHeight() const;
+	virtual I32 GetMinWidth() const;
+	virtual I32 GetMinHeight() const;
 
-	U32 GetWidth() const;
-	U32 GetHeight() const;
+	I32 GetWidth() const;
+	I32 GetHeight() const;
 
-	U32 GetXPosition() const;
-	U32 GetYPosition() const;
+	I32 GetXPosition() const;
+	I32 GetYPosition() const;
 };
 

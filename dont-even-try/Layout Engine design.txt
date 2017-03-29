@@ -1,0 +1,21 @@
+New design based on the way MFC does the same task:
+
+All windows that support split panel views are defined as a subclass of CPanelContainer.
+
+A split window handles the layout of sub windows, called panels. Each panel must inherit
+from CWindow. This means a panel container can be a panel as well, and standard windows can
+be managed by panel containers.
+
+Each panel added to a container results in the panel container creating a separator between that 
+panel and its neighbors. Separators are small windows (scrollbars?) that can be clicked and dragged
+perpendicular to their longest dimension only. 
+
+Panels can only be added sequentially along one axis - either the vertical or horizontal axis.
+To get a panel container to do both, you need a special panel container that can handle dropping 
+windows into it (think Visual Studio solution explorer). 
+
+A panel container cannot be a main window. A main window may contain a panel container, but the 
+panel container cannot directly be used.
+
+For MFC reference, look at winsplit.cpp in $(MSVC2015)\VC\atlmfc\src\mfc or $(MSVC2017)\VC\Tools\MSVC\$(Version)\atlmfc\src\mfc
+MFC must be installed for the source files to appear.

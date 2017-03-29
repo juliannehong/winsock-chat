@@ -11,7 +11,7 @@ class CObjectPtr
 	T* pObject;
 public:
 
-	CObjectPtr(T* pNewObjectPtr = nullptr, bool IsSoleOwner = false) : pObject(pNewObjectPtr)
+	CObjectPtr(T *const  pNewObjectPtr = nullptr, bool IsSoleOwner = false) : pObject(pNewObjectPtr)
 	{
 		if(!IsSoleOwner)
 		{
@@ -19,7 +19,7 @@ public:
 		}
 	}
 
-	CObjectPtr(CObjectPtr<T> &other) :pObject(other.pObject)
+	CObjectPtr(const CObjectPtr<T> &other) :pObject(other.pObject)
 	{
 		AddRef();
 	}
@@ -30,9 +30,10 @@ public:
 	}
 
 	template<typename Q>
-	CObjectPtr(CObjectPtr<Q> const& other)
+	CObjectPtr(const CObjectPtr<Q>& other)
 	{
-		pObject = dynamic_cast<T*>(other.pObject);
+		static_assert(std::is_base_of<T, Q>::value || std::is_base_of<Q, T>::value, "T is not convertible to Q!");
+		pObject = dynamic_cast<T*>(other.GetInterface());
 		AddRef();
 	}
 
@@ -61,17 +62,17 @@ public:
 		return r;
 	}
 
-	T* operator->()
+	T* operator->() const
 	{
 		return pObject;
 	}
 
-	T* GetInterface()
+	T* GetInterface() const
 	{
 		return pObject;
 	}
 
-	CObjectPtr<T>& operator=(T* pOther)
+	CObjectPtr<T>& operator=(T* const pOther)
 	{
 		Release();
 		pObject = pOther;
@@ -79,7 +80,7 @@ public:
 		return *this;
 	}
 
-	CObjectPtr<T>& operator=(CObjectPtr<T> &pOther)
+	CObjectPtr<T>& operator=(const CObjectPtr<T> &pOther)
 	{
 		Release();
 		pObject = pOther.pObject;
@@ -94,27 +95,27 @@ public:
 		return *this;
 	}
 
-	bool operator==(T* pOther)
+	bool operator==(const T* const pOther) const
 	{
 		return pObject == pOther;
 	}
 
-	bool operator==(CObjectPtr<T>& pOther)
+	bool operator==(const CObjectPtr<T>& pOther) const
 	{
 		return pObject == pOther.pObject;
 	}
 
-	bool operator!=(T* pOther)
+	bool operator!=(const T* const pOther) const
 	{
 		return pObject != pOther;
 	}
 
-	bool operator!=(CObjectPtr<T>& pOther)
+	bool operator!=(const CObjectPtr<T>& pOther) const
 	{
 		return pObject != pOther.pObject;
 	}
 
-	operator bool()
+	operator bool() const
 	{
 		return pObject != nullptr;
 	}

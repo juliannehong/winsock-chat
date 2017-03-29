@@ -5,7 +5,7 @@ LRESULT CStandardWindow::SubclassProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 	if(msg == WM_NCDESTROY)
 	{
 		RemoveWindowSubclass(hwnd, CStandardWindow::SubclassProc, SubclassID);
-		CObjectPtr<CStandardWindow> csw = (CStandardWindow*)SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+		CObjectPtr<CStandardWindow> csw = CWindow::GetClassPointerAndClear(hwnd);
 		csw->Release();
 	}
 	return DefSubclassProc(hwnd, msg, wparam, lparam);
