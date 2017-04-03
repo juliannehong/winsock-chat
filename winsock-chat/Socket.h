@@ -12,12 +12,15 @@ class SocketBase
 	
 public:
 	SocketBase() {};
-	~SocketBase() {};
+	virtual ~SocketBase() {};
 
 	void SetSocketAddress(const char* ip_string, u_short port);
 	ULONG GetHostAddress();
 	u_short GetPortNumber();
 	sockaddr_in GetSocketAddress();
+
+protected: 
+	sockaddr_in m_sockaddr;
 
 };
 
@@ -25,7 +28,14 @@ class ClientSocket : public SocketBase
 {
 public:
 	ClientSocket() {};
-	~ClientSocket() {};
-private:
-	sockaddr_in client_addr;
+	virtual ~ClientSocket() {};
+
+};
+
+class ServerSocket : public SocketBase
+{
+public:
+	ServerSocket() {};
+	virtual ~ServerSocket() {};
+
 };
