@@ -70,7 +70,7 @@
       <Filter>Source Files\Windowing\Standard Windows</Filter>
     </ClCompile>
     <ClCompile Include="PanelContainer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Windowing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,7 +108,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PanelContainer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Windowing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

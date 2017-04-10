@@ -9,6 +9,7 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 	{
 	case WM_NCCREATE:
 		{
+			//link up the window with the class that manages it.
 			LPCREATESTRUCT cs = (LPCREATESTRUCT)lparam;
 			ccw = (CCustomWindow*)cs->lpCreateParams;
 			ccw->SavePointerToHandle(hwnd);

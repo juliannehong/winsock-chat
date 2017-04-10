@@ -1,5 +1,5 @@
 #include "PanelContainer.h"
-
+using namespace PanelContainer;
 /*
 ON_WM_SETCURSOR()
 ON_WM_MOUSEMOVE()
@@ -53,9 +53,6 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			}
 			break; //pass it to the parent.
 		}
-	case WM_LBUTTONUP:
-		StopTracking();
-		return 0;
 	case WM_CANCELMODE:
 		StopTracking(true);
 		return 0;
@@ -89,15 +86,48 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 		DrawClientArea((HDC)wparam);
 		return 0;
 	case WM_MOUSEMOVE:
+		{
+			if(GetCapture() != GetWindowHandle())
+			{
+				StopTracking();
+			}
+			//mouse movement
+			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+			if(IsTrackingEnabled())
+			{
+
+			}
+			else
+			{
+				SetCursorFromTrackedObject(GetObjectToTrack(pt));
+			}
+		}
+		break;
 	case WM_LBUTTONDOWN:
-	case WM_LBUTTONDBLCLK:
-		//mouse tracking.
-		break;
-	case WM_HSCROLL:
-	case WM_VSCROLL:
+		{
+			if(!IsTrackingEnabled())
+			{
+				POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+				StartTracking(GetObjectToTrack(pt));
+			}
+			return 0;
+		}
+	case WM_LBUTTONUP:
+		StopTracking();
+		return 0;
+	case WM_MOUSEHWHEEL:
 	case WM_MOUSEWHEEL:
-		//subwindow scrolling.
-		break;
+		{
+			//subwindow scrolling.
+			//find out the sub window the mouse is over, and forward the message to it.
+			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+			U32 index = ConvertPointToIndex(pt);
+			if(index != -1)
+			{
+				return SendMessage(panels.at(index)->GetWindowHandle(), msg, wparam, lparam);
+			}
+			break;
+		}
 	case WM_SYSCOMMAND:
 		//Forward SC_SIZE to the parent.
 		if((wparam & 0xFFF0) == SC_SIZE)
@@ -117,7 +147,6 @@ LPTSTR CPanelContainer::GetWindowClassName() const
 void CPanelContainer::InitializeWindowClass(LPWNDCLASS wc)
 {
 	wc->hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wc->style = CS_DBLCLKS;
 }
 
 void CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
@@ -125,7 +154,45 @@ void CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 	cs->style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VSCROLL;
 }
 
-CPanelContainer::CPanelContainer()
+bool CPanelContainer::IsTrackingEnabled()
+{
+	return istracking;
+}
+
+TrackedObject CPanelContainer::GetObjectToTrack(POINT pt)
+{
+
+	return TrackedObject();
+}
+
+void CPanelContainer::SetCursorFromTrackedObject(TrackedObject o)
+{
+
+}
+
+POINT CPanelContainer::ConvertPointToCell(POINT pt)
+{
+	POINT ret;
+	ret.x = pt.x / ColumnCount;
+	ret.y = pt.y / RowCount;
+	return ret;
+}
+
+void CPanelContainer::RecomputeLayout()
+{
+}
+
+void CPanelContainer::DrawClientArea(HDC hdc)
+{
+	RECT r = { 0 };
+	GetClientRect(GetWindowHandle(), &r);
+	InflateRect(&r, -BorderX, -BorderY);
+
+
+
+}
+
+CPanelContainer::CPanelContainer(U8 MaxRowCount, U8 MaxColumnCount)
 {
 }
 
@@ -150,4 +217,17 @@ CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 		return panels[Index];
 	}
 	return nullptr;
+}
+
+CPanelContainerGlobals::CPanelContainerGlobals():
+	arrow(LoadCursor(nullptr, IDC_ARROW)),
+	hsize(LoadCursor(nullptr, IDC_SIZEWE)),
+	vsize(LoadCursor(nullptr, IDC_SIZENS))
+{
+}
+
+CPanelContainerGlobals::~CPanelContainerGlobals()
+{
+	//don't destroy the cursors - Windows owns them.
+	//see https://msdn.microsoft.com/en-us/library/windows/desktop/ms648386(v=vs.85).aspx, Remarks section.
 }
