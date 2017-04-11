@@ -154,12 +154,12 @@ void CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 	cs->style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VSCROLL;
 }
 
-bool CPanelContainer::IsTrackingEnabled()
+bool CPanelContainer::IsTrackingEnabled() const
 {
 	return istracking;
 }
 
-TrackedObject CPanelContainer::GetObjectToTrack(POINT pt)
+TrackedObject CPanelContainer::GetObjectToTrack(POINT pt) const
 {
 
 	return TrackedObject();
@@ -167,15 +167,38 @@ TrackedObject CPanelContainer::GetObjectToTrack(POINT pt)
 
 void CPanelContainer::SetCursorFromTrackedObject(TrackedObject o)
 {
-
+	switch(o.GetObjectType())
+	{
+	case Object_HorizontalSplit:
+		SetCursor(cglobals.hsize);
+		break;
+	case Object_VerticalSplit:
+		SetCursor(cglobals.vsize);
+		break;
+	default:
+		SetCursor(cglobals.arrow);
+		break;
+	}
 }
 
-POINT CPanelContainer::ConvertPointToCell(POINT pt)
+POINT CPanelContainer::ConvertPointToCell(POINT pt) const
 {
 	POINT ret;
-	ret.x = pt.x / ColumnCount;
-	ret.y = pt.y / RowCount;
+	//LERP here. we need the result BETWEEN 0 and CCount/RCount, NOT just divided by them!
+	//LERP from [r.left, r.right) -> [0, CCount) and [r.top, r.bottom) -> [0, RCount)
+	//ret.x = pt.x / ColumnCount;
+	//ret.y = pt.y / RowCount;
 	return ret;
+}
+
+U32 CPanelContainer::ConvertPointToIndex(POINT pt) const
+{
+	return U32();
+}
+
+U32 CPanelContainer::ConvertCellToIndex(U8 Row, U8 Column) const
+{
+	return U32();
 }
 
 void CPanelContainer::RecomputeLayout()
@@ -187,8 +210,10 @@ void CPanelContainer::DrawClientArea(HDC hdc)
 	RECT r = { 0 };
 	GetClientRect(GetWindowHandle(), &r);
 	InflateRect(&r, -BorderX, -BorderY);
-
-
+	int cxInside = r.right;
+	int cyInside = r.bottom;
+	GetClientRect(GetWindowHandle(), &r);
+	//go through each cell, and build the borders as needed.
 
 }
 
@@ -210,6 +235,17 @@ bool CPanelContainer::IsIndexValid(U32 Index) const
 	return (Index < panels.size() && Index >= 0);
 }
 
+bool CPanelContainer::IsCellValid(U8 Row, U8 Column) const
+{
+	return ((Row < 0 || Row > UsedRows) &&
+		(Column < 0 || Column > UsedColumns));
+}
+
+bool CPanelContainer::IsCellSet(U8 Row, U8 Column) const
+{
+	return (IsCellValid(Row, Column) && (ConvertCellToIndex(Row, Column) != -1));
+}
+
 CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 {
 	if(IsIndexValid(Index))
@@ -219,10 +255,25 @@ CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 	return nullptr;
 }
 
-CPanelContainerGlobals::CPanelContainerGlobals():
+CObjectPtr<CWindow> CPanelContainer::GetPanelAtCell(U8 Row, U8 Column) const
+{
+	if(IsCellSet(Row, Column))
+	{
+		return GetPanel(ConvertCellToIndex(Row, Column));
+	}
+	return nullptr;
+}
+
+CPanelContainerGlobals::CPanelContainerGlobals() :
 	arrow(LoadCursor(nullptr, IDC_ARROW)),
 	hsize(LoadCursor(nullptr, IDC_SIZEWE)),
-	vsize(LoadCursor(nullptr, IDC_SIZENS))
+	vsize(LoadCursor(nullptr, IDC_SIZENS)),
+	ButtonFace(GetSysColorBrush(COLOR_BTNFACE)),
+	ButtonHilight(GetSysColorBrush(COLOR_BTNHIGHLIGHT)),
+	ButtonShadow(GetSysColorBrush(COLOR_BTNSHADOW)),
+	WindowFrame(GetSysColorBrush(COLOR_WINDOWFRAME)),
+	cxVScroll(GetSystemMetrics(SM_CXVSCROLL)),
+	cyHScroll(GetSystemMetrics(SM_CYHSCROLL))
 {
 }
 
@@ -230,4 +281,11 @@ CPanelContainerGlobals::~CPanelContainerGlobals()
 {
 	//don't destroy the cursors - Windows owns them.
 	//see https://msdn.microsoft.com/en-us/library/windows/desktop/ms648386(v=vs.85).aspx, Remarks section.
+
+	//we can delete the brushes. Since the brushes are not affected by deletion, this 
+	// is safe to do, and will allow us to use custom brushes later if we wish.
+	DeleteObject(ButtonFace);
+	DeleteObject(ButtonHilight);
+	DeleteObject(ButtonShadow);
+	DeleteObject(WindowFrame);
 }

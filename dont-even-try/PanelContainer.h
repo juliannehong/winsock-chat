@@ -9,6 +9,12 @@ namespace PanelContainer
 		HCURSOR arrow;
 		HCURSOR hsize;
 		HCURSOR vsize;
+		HBRUSH ButtonFace;
+		HBRUSH ButtonHilight;
+		HBRUSH ButtonShadow;
+		HBRUSH WindowFrame;
+		int cxVScroll;
+		int cyHScroll;
 
 		CPanelContainerGlobals();
 		~CPanelContainerGlobals();
@@ -26,11 +32,11 @@ namespace PanelContainer
 	private:
 		U32 Id;
 	public:
-		FORCEINLINE U8 GetObjectType(TrackedObject to)
+		FORCEINLINE U8 GetObjectType()
 		{
 			return (U8)(((Id) >> 24) & 0xFF);
 		}
-		FORCEINLINE U32 GetObjectIndex(TrackedObject to)
+		FORCEINLINE U32 GetObjectIndex()
 		{
 			return (U32)(((Id) & 0xFF'FFFF));
 		}
@@ -66,6 +72,12 @@ class CPanelContainer :
 	U8 UsedColumns;
 	U8 BorderX;
 	U8 BorderY;
+	U8 BorderSharedX;
+	U8 BorderSharedY;
+	U8 SplitterX;
+	U8 SplitterY;
+	U8 SplitterGapX;
+	U8 SplitterGapY;
 	bool istracking;
 
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -75,15 +87,16 @@ class CPanelContainer :
 	void InitializeWindowClass(LPWNDCLASS wc);
 	void InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 
-	bool IsTrackingEnabled();
+	bool IsTrackingEnabled() const;
 	void StartTracking(PanelContainer::TrackedObject obj);
 	void StopTracking(bool DiscardChanges = false);
 
-	PanelContainer::TrackedObject GetObjectToTrack(POINT pt);
+	PanelContainer::TrackedObject GetObjectToTrack(POINT pt) const;
 	void SetCursorFromTrackedObject(PanelContainer::TrackedObject o);
 
-	POINT ConvertPointToCell(POINT pt);
-	U32 ConvertPointToIndex(POINT pt);
+	POINT ConvertPointToCell(POINT pt) const;
+	U32 ConvertPointToIndex(POINT pt) const;
+	U32 ConvertCellToIndex(U8 Row, U8 Column) const;
 
 	void RecomputeLayout();
 

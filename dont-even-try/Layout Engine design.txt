@@ -19,3 +19,8 @@ panel container cannot directly be used.
 
 For MFC reference, look at winsplit.cpp in $(MSVC2015)\VC\atlmfc\src\mfc or $(MSVC2017)\VC\Tools\MSVC\$(Version)\atlmfc\src\mfc
 MFC must be installed for the source files to appear.
+
+HOLY SHIT I JUST REALIZED
+
+
+BSP TREE
