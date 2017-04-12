@@ -43,6 +43,12 @@
     <Filter Include="Source Files\Windowing\Standard Windows">
       <UniqueIdentifier>{442a5a0c-1e66-493c-ac5f-7603d687ca68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Windowing\Framework\Support">
+      <UniqueIdentifier>{28fdf4ee-811d-4217-b0d7-69b40e8ca476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windowing\Framework\Support">
+      <UniqueIdentifier>{3bff33c5-56d7-4ff3-9595-cfa6549e5c39}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChatPanel.cpp">
@@ -70,7 +76,10 @@
       <Filter>Source Files\Windowing\Standard Windows</Filter>
     </ClCompile>
     <ClCompile Include="PanelContainer.cpp">
-      <Filter>Source Files\Windowing</Filter>
+      <Filter>Source Files\Windowing\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="PanelContainerSupport.cpp">
+      <Filter>Source Files\Windowing\Framework\Support</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,7 +117,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PanelContainer.h">
-      <Filter>Header Files\Windowing</Filter>
+      <Filter>Header Files\Windowing\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="PanelContainerSupport.h">
+      <Filter>Header Files\Windowing\Framework\Support</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

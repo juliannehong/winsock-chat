@@ -19,7 +19,7 @@ public:
 
 	static CObjectPtr<CWindow> GetClassPointer(HWND hwnd);
 	
-	HWND GetWindowHandle();
+	HWND GetWindowHandle() const;
 	
 	bool Create(HWND parent = nullptr);
 

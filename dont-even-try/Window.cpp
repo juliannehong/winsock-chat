@@ -19,7 +19,7 @@ public:
 
 CGlobalAtom WindowBindingAtom(TEXT("CWindow::ClassStorageSlot"));
 
-HWND CWindow::GetWindowHandle()
+HWND CWindow::GetWindowHandle() const
 {
 	return hwnd;
 }

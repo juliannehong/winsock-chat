@@ -95,7 +95,39 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
 			if(IsTrackingEnabled())
 			{
+				pt.Offset(m_ptTrackOffset); // pt is the upper right of hit detect
+											// limit the point to the valid split range
+				if(pt.y < m_rectLimit.top)
+					pt.y = m_rectLimit.top;
+				else if(pt.y > m_rectLimit.bottom)
+					pt.y = m_rectLimit.bottom;
+				if(pt.x < m_rectLimit.left)
+					pt.x = m_rectLimit.left;
+				else if(pt.x > m_rectLimit.right)
+					pt.x = m_rectLimit.right;
 
+				switch(trackedobject.GetObjectType())
+				{
+				case Object_HorizontalSplit:
+					{
+						if(m_rectTracker.top != pt.y)
+						{
+							OnInvertTracker(m_rectTracker);
+							m_rectTracker.OffsetRect(0, pt.y - m_rectTracker.top);
+							OnInvertTracker(m_rectTracker);
+						}
+					}
+					break;
+				case Object_VerticalSplit:
+					{
+						if(m_rectTracker.left != pt.x)
+						{
+							OnInvertTracker(m_rectTracker);
+							m_rectTracker.OffsetRect(pt.x - m_rectTracker.left, 0);
+							OnInvertTracker(m_rectTracker);
+						}
+					}
+				}
 			}
 			else
 			{
@@ -121,10 +153,10 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			//subwindow scrolling.
 			//find out the sub window the mouse is over, and forward the message to it.
 			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
-			U32 index = ConvertPointToIndex(pt);
-			if(index != -1)
+			CObjectPtr<CWindow> panel = GetPanelAtPoint(pt);
+			if(panel)
 			{
-				return SendMessage(panels.at(index)->GetWindowHandle(), msg, wparam, lparam);
+				return SendMessage(panel->GetWindowHandle(), msg, wparam, lparam);
 			}
 			break;
 		}
@@ -159,9 +191,17 @@ bool CPanelContainer::IsTrackingEnabled() const
 	return istracking;
 }
 
+void CPanelContainer::StartTracking(PanelContainer::TrackedObject obj)
+{
+}
+
+void CPanelContainer::StopTracking(bool DiscardChanges)
+{
+}
+
 TrackedObject CPanelContainer::GetObjectToTrack(POINT pt) const
 {
-
+	//Traverse the BSP tree and find the splitter it hits.
 	return TrackedObject();
 }
 
@@ -181,35 +221,21 @@ void CPanelContainer::SetCursorFromTrackedObject(TrackedObject o)
 	}
 }
 
-POINT CPanelContainer::ConvertPointToCell(POINT pt) const
-{
-	POINT ret;
-	//LERP here. we need the result BETWEEN 0 and CCount/RCount, NOT just divided by them!
-	//LERP from [r.left, r.right) -> [0, CCount) and [r.top, r.bottom) -> [0, RCount)
-	//ret.x = pt.x / ColumnCount;
-	//ret.y = pt.y / RowCount;
-	return ret;
-}
-
 U32 CPanelContainer::ConvertPointToIndex(POINT pt) const
 {
-	return U32();
-}
-
-U32 CPanelContainer::ConvertCellToIndex(U8 Row, U8 Column) const
-{
-	return U32();
+	//Traverse the BSP tree and see which cell the point falls into.
 }
 
 void CPanelContainer::RecomputeLayout()
 {
+
 }
 
 void CPanelContainer::DrawClientArea(HDC hdc)
 {
 	RECT r = { 0 };
 	GetClientRect(GetWindowHandle(), &r);
-	InflateRect(&r, -BorderX, -BorderY);
+	InflateRect(&r, -drawparams.BorderX, -drawparams.BorderY);
 	int cxInside = r.right;
 	int cyInside = r.bottom;
 	GetClientRect(GetWindowHandle(), &r);
@@ -217,7 +243,7 @@ void CPanelContainer::DrawClientArea(HDC hdc)
 
 }
 
-CPanelContainer::CPanelContainer(U8 MaxRowCount, U8 MaxColumnCount)
+CPanelContainer::CPanelContainer()
 {
 }
 
@@ -235,15 +261,11 @@ bool CPanelContainer::IsIndexValid(U32 Index) const
 	return (Index < panels.size() && Index >= 0);
 }
 
-bool CPanelContainer::IsCellValid(U8 Row, U8 Column) const
+bool CPanelContainer::IsPointValid(POINT pt) const
 {
-	return ((Row < 0 || Row > UsedRows) &&
-		(Column < 0 || Column > UsedColumns));
-}
-
-bool CPanelContainer::IsCellSet(U8 Row, U8 Column) const
-{
-	return (IsCellValid(Row, Column) && (ConvertCellToIndex(Row, Column) != -1));
+	RECT r;
+	GetClientRect(GetWindowHandle(), &r);
+	return PtInRect(&r, pt) == TRUE;
 }
 
 CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
@@ -255,37 +277,8 @@ CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 	return nullptr;
 }
 
-CObjectPtr<CWindow> CPanelContainer::GetPanelAtCell(U8 Row, U8 Column) const
+CObjectPtr<CWindow> CPanelContainer::GetPanelAtPoint(POINT pt) const
 {
-	if(IsCellSet(Row, Column))
-	{
-		return GetPanel(ConvertCellToIndex(Row, Column));
-	}
-	return nullptr;
+	return GetPanel(ConvertPointToIndex(pt));
 }
 
-CPanelContainerGlobals::CPanelContainerGlobals() :
-	arrow(LoadCursor(nullptr, IDC_ARROW)),
-	hsize(LoadCursor(nullptr, IDC_SIZEWE)),
-	vsize(LoadCursor(nullptr, IDC_SIZENS)),
-	ButtonFace(GetSysColorBrush(COLOR_BTNFACE)),
-	ButtonHilight(GetSysColorBrush(COLOR_BTNHIGHLIGHT)),
-	ButtonShadow(GetSysColorBrush(COLOR_BTNSHADOW)),
-	WindowFrame(GetSysColorBrush(COLOR_WINDOWFRAME)),
-	cxVScroll(GetSystemMetrics(SM_CXVSCROLL)),
-	cyHScroll(GetSystemMetrics(SM_CYHSCROLL))
-{
-}
-
-CPanelContainerGlobals::~CPanelContainerGlobals()
-{
-	//don't destroy the cursors - Windows owns them.
-	//see https://msdn.microsoft.com/en-us/library/windows/desktop/ms648386(v=vs.85).aspx, Remarks section.
-
-	//we can delete the brushes. Since the brushes are not affected by deletion, this 
-	// is safe to do, and will allow us to use custom brushes later if we wish.
-	DeleteObject(ButtonFace);
-	DeleteObject(ButtonHilight);
-	DeleteObject(ButtonShadow);
-	DeleteObject(WindowFrame);
-}
