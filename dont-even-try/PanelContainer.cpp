@@ -23,21 +23,25 @@ ON_WM_MOUSEWHEEL()
 
 LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+	assert(hwnd == GetWindowHandle());
 	switch(msg)
 	{
 	case WM_SETCURSOR:
-		assert(hwnd == GetWindowHandle());
 		{
 			if(!IsTrackingEnabled() && LOWORD(lparam) == HTCLIENT)
 			{
-				return TRUE; //we will do this ourselves.
+				//Tracking isn't enabled and we hit the client area. 
+				// We will set the cursor to the correct value.
+				return TRUE; 
 			}
-			break; //Let the parent handle it.
+			break; //Let the parent deal with it.
 		}
 	case WM_PAINT:
 		{
+			//do we need to repaint anything?
 			if(GetUpdateRect(hwnd, nullptr, FALSE))
 			{
+				//yup. Do so.
 				PAINTSTRUCT ps;
 				HDC dc = BeginPaint(hwnd, &ps);
 				DrawClientArea(dc);
@@ -45,15 +49,22 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			}
 			return 0;
 		}
+	case WM_GETMINMAXINFO:
+		//NOTE - We should handle WM_GETMINMAXINFO to prevent our window from becoming too small 
+		// to display our panels adequately.
+		// For now, do nothing.
+		break;
 	case WM_SIZE:
 		{
 			if(wparam != SIZE_MINIMIZED && HIWORD(lparam) > 0 && LOWORD(lparam) > 0)
 			{
+				//we changed the size of the form. recompute everything.
 				RecomputeLayout();
 			}
 			break; //pass it to the parent.
 		}
 	case WM_CANCELMODE:
+		//discard the changes we have queued.
 		StopTracking(true);
 		return 0;
 	case WM_NCCREATE:
@@ -78,7 +89,7 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 		}
 		return 0;
 	case WM_PRINTCLIENT:
-		//paint the client window onto a predefined DC.
+		//paint the client window onto a predefined DC (print screen/print preview/etc.)
 		if(wparam == NULL)
 		{
 			return -1;
@@ -95,43 +106,46 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
 			if(IsTrackingEnabled())
 			{
-				pt.Offset(m_ptTrackOffset); // pt is the upper right of hit detect
-											// limit the point to the valid split range
-				if(pt.y < m_rectLimit.top)
-					pt.y = m_rectLimit.top;
-				else if(pt.y > m_rectLimit.bottom)
-					pt.y = m_rectLimit.bottom;
-				if(pt.x < m_rectLimit.left)
-					pt.x = m_rectLimit.left;
-				else if(pt.x > m_rectLimit.right)
-					pt.x = m_rectLimit.right;
-
-				switch(trackedobject.GetObjectType())
+				// pt is relative coordinates - transform them into real ones we can use.
+				pt.x += TrackingOffset.x;
+				pt.y += TrackingOffset.y;
+				// Enforce the tracking limits for the coordinates.
+				if(pt.y < TrackingLimit.top)
+					pt.y = TrackingLimit.top;
+				else if(pt.y > TrackingLimit.bottom)
+					pt.y = TrackingLimit.bottom;
+				if(pt.x < TrackingLimit.left)
+					pt.x = TrackingLimit.left;
+				else if(pt.x > TrackingLimit.right)
+					pt.x = TrackingLimit.right;
+				//Now update the tracking bars.
+				switch(TrackedObject.GetObjectType())
 				{
 				case Object_HorizontalSplit:
 					{
-						if(m_rectTracker.top != pt.y)
+						if(TrackingRect.top != pt.y)
 						{
-							OnInvertTracker(m_rectTracker);
-							m_rectTracker.OffsetRect(0, pt.y - m_rectTracker.top);
-							OnInvertTracker(m_rectTracker);
+							InvertTracker(TrackingRect);
+							OffsetRect(&TrackingRect, 0, pt.y - TrackingRect.top);
+							InvertTracker(TrackingRect);
 						}
 					}
 					break;
 				case Object_VerticalSplit:
 					{
-						if(m_rectTracker.left != pt.x)
+						if(TrackingRect.left != pt.x)
 						{
-							OnInvertTracker(m_rectTracker);
-							m_rectTracker.OffsetRect(pt.x - m_rectTracker.left, 0);
-							OnInvertTracker(m_rectTracker);
+							InvertTracker(TrackingRect);
+							OffsetRect(&TrackingRect, pt.x - TrackingRect.left, 0);
+							InvertTracker(TrackingRect);
 						}
 					}
 				}
 			}
 			else
 			{
-				SetCursorFromTrackedObject(GetObjectToTrack(pt));
+				// no tracking - just fixup the cursor.
+				SetCursorFromTrackedObject(GetObjectAtPoint(pt));
 			}
 		}
 		break;
@@ -140,7 +154,8 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 			if(!IsTrackingEnabled())
 			{
 				POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
-				StartTracking(GetObjectToTrack(pt));
+				//Start tracking the object we clicked on, if it's of any value to us.
+				StartTracking(GetObjectAtPoint(pt));
 			}
 			return 0;
 		}
@@ -151,11 +166,12 @@ LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 	case WM_MOUSEWHEEL:
 		{
 			//subwindow scrolling.
-			//find out the sub window the mouse is over, and forward the message to it.
+			//find out the sub window the mouse is over.
 			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
 			CObjectPtr<CWindow> panel = GetPanelAtPoint(pt);
 			if(panel)
 			{
+				// and forward the message to it.
 				return SendMessage(panel->GetWindowHandle(), msg, wparam, lparam);
 			}
 			break;
@@ -191,21 +207,113 @@ bool CPanelContainer::IsTrackingEnabled() const
 	return istracking;
 }
 
-void CPanelContainer::StartTracking(PanelContainer::TrackedObject obj)
+void CPanelContainer::StartTracking(ObjectID obj)
 {
+	if(obj.GetObjectType() == Object_Panel || obj.GetObjectType() == Object_None)
+	{
+		//do nothing here.
+		return;
+	}
+	//TODO: create the tracker bar rectangle, limit the range it can travel over, and compute the tracking offset.
+
+	//Grab the mouse and the current window focus
+	SetCapture(GetWindowHandle());
+	SetFocus(GetWindowHandle());
+	//Clear all pending updates
+	RedrawWindow(GetWindowHandle(), nullptr, nullptr, RDW_ALLCHILDREN | RDW_UPDATENOW);
+	istracking = true;
+	InvertTracker(TrackingRect);
+	TrackedObject = obj;
+	SetCursorFromTrackedObject(TrackedObject);
 }
 
 void CPanelContainer::StopTracking(bool DiscardChanges)
 {
+	if(!IsTrackingEnabled())
+	{
+		return;
+	}
+	ReleaseCapture();
+	InvertTracker(TrackingRect);
+	istracking = false;
+	if(!DiscardChanges)
+	{
+		//TODO: Do stuff.
+		//check if the tracking rectangle even moved in the first place.
+
+	}
 }
 
-TrackedObject CPanelContainer::GetObjectToTrack(POINT pt) const
+void CPanelContainer::ComputeBounds(const RECT & rBounds, PanelContainer::Node n, RECT & rSeparator, RECT & rLeft, RECT & rRight) const
+{
+	rSeparator = rLeft = rRight = rBounds;
+	if(n.Flags & NodeFlag_HorizontalSeparator)
+	{
+		//l, t, r, b
+		rSeparator.top += n.RelativePosition;
+		rSeparator.bottom = rSeparator.top + drawparams.SplitterY;
+		rLeft.bottom = rSeparator.top;
+		rRight.top = rSeparator.bottom;
+	}
+	else
+	{
+		rSeparator.left += n.RelativePosition;
+		rSeparator.right = rSeparator.left + drawparams.SplitterX;
+		rLeft.right = rSeparator.left;
+		rRight.left = rSeparator.right;
+	}
+}
+
+ObjectID CPanelContainer::GetObjectAtPoint_Rec(POINT pt, U32 index, const RECT& currentbounds) const
+{
+	Node n = Layout.at(index);
+	if(n.Left == InvalidNodeIndex || n.Right == InvalidNodeIndex)
+	{
+		//should never happen - all nodes should point to subnodes or to panes.
+		__debugbreak();
+		return ObjectID(Object_None);
+	}
+	RECT splitbounds, rLeft, rRight;
+	ComputeBounds(currentbounds, n, splitbounds, rLeft, rRight);
+	ObjectType type = (n.Flags & NodeFlag_HorizontalSeparator) ? Object_HorizontalSplit : Object_VerticalSplit;
+	if(PtInRect(&splitbounds, pt))
+	{
+		return ObjectID(type, index);
+	}
+	if(PtInRect(&rLeft, pt))
+	{
+		if(n.Flags & NodeFlag_LeftIsNode)
+		{
+			return GetObjectAtPoint_Rec(pt, n.Left, rLeft);
+		}
+		else
+		{
+			return ObjectID(Object_Panel, n.Left);
+		}
+	}
+	if(PtInRect(&rRight, pt))
+	{
+		if(n.Flags & NodeFlag_RightIsNode)
+		{
+			return GetObjectAtPoint_Rec(pt, n.Right, rRight);
+		}
+		else
+		{
+			return ObjectID(Object_Panel, n.Right);
+		}
+	}
+	return ObjectID(Object_None);
+}
+
+ObjectID CPanelContainer::GetObjectAtPoint(POINT pt) const
 {
 	//Traverse the BSP tree and find the splitter it hits.
-	return TrackedObject();
+	RECT r;
+	GetClientRect(GetWindowHandle(), &r);
+	return GetObjectAtPoint_Rec(pt, 0, r);
 }
 
-void CPanelContainer::SetCursorFromTrackedObject(TrackedObject o)
+void CPanelContainer::SetCursorFromTrackedObject(ObjectID o) const
 {
 	switch(o.GetObjectType())
 	{
@@ -223,24 +331,113 @@ void CPanelContainer::SetCursorFromTrackedObject(TrackedObject o)
 
 U32 CPanelContainer::ConvertPointToIndex(POINT pt) const
 {
-	//Traverse the BSP tree and see which cell the point falls into.
+	ObjectID id = GetObjectAtPoint(pt);
+	if(id.GetObjectType() != Object_Panel)
+	{
+		return -1;
+	}
+	return id.GetObjectIndex();
 }
 
 void CPanelContainer::RecomputeLayout()
 {
-
+	//TODO: Recompute the layout based on changes in size or tracking.
 }
 
-void CPanelContainer::DrawClientArea(HDC hdc)
+void CPanelContainer::DrawClientArea(HDC hdc) const
 {
 	RECT r = { 0 };
 	GetClientRect(GetWindowHandle(), &r);
-	InflateRect(&r, -drawparams.BorderX, -drawparams.BorderY);
-	int cxInside = r.right;
-	int cyInside = r.bottom;
-	GetClientRect(GetWindowHandle(), &r);
-	//go through each cell, and build the borders as needed.
+	if(!hdc)
+	{
+		//force an update. This shouldn't happen, but we'll handle it gracefully.
+		RedrawWindow(GetWindowHandle(), &r, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
+		return;
+	}
+	//now recursively draw the BSP tree.
+	DrawClientAreaRec(hdc, 0, r);
+}
 
+//Traverse the BSP tree and draw each split. 
+// While traversing, when we've resolved a rect, draw the border of that rect.
+void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& currentbounds) const
+{
+	//get the root element.
+	Node n = Layout.at(currentindex);
+	if(n.Left == InvalidNodeIndex || n.Right == InvalidNodeIndex)
+	{
+		//should never happen - all nodes should point to subnodes or to panes.
+		__debugbreak();
+		return;
+	}
+	RECT splitbounds, rLeft, rRight;
+	ComputeBounds(currentbounds, n, splitbounds, rLeft, rRight);
+	//draw the separator.
+	FillRect(hdc, &splitbounds, cglobals.ButtonFace);
+	//Now subdivide the bounding rectangle by the splitter.
+	if(!IsRectEmpty(&rLeft))
+	{
+		//rect should have something done.
+		if(n.Flags & NodeFlag_LeftIsNode)
+		{
+			//recursively do things.
+			DrawClientAreaRec(hdc, n.Left, rLeft);
+		}
+		else
+		{
+			//draw the border around the current panel.
+			DrawBorder(hdc, rLeft, cglobals.ButtonShadow, cglobals.ButtonHilight);
+			InflateRect(&rLeft, -1, -1);
+			DrawBorder(hdc, rLeft, cglobals.WindowFrame, cglobals.ButtonFace);
+		}
+	}
+	if(!IsRectEmpty(&rRight))
+	{
+		if(n.Flags & NodeFlag_RightIsNode)
+		{
+			//Recursively do things.
+			DrawClientAreaRec(hdc, n.Right, rRight);
+		}
+		else
+		{
+			//draw the border around the current panel.
+			DrawBorder(hdc, rRight, cglobals.ButtonShadow, cglobals.ButtonHilight);
+			InflateRect(&rLeft, -1, -1);
+			DrawBorder(hdc, rLeft, cglobals.WindowFrame, cglobals.ButtonFace);
+		}
+	}
+}
+
+void CPanelContainer::DrawBorder(HDC hdc, const RECT& BorderRect, HBRUSH TopLeft, HBRUSH BottomRight) const
+{
+	LONG x = BorderRect.left,
+		y = BorderRect.top,
+		cx = BorderRect.right - BorderRect.left,
+		cy = BorderRect.bottom - BorderRect.top;
+	RECT r = { x, y, cx - 1, 1 };
+	FillRect(hdc, &r, TopLeft);
+	r = { x, y, 1, cy - 1 };
+	FillRect(hdc, &r, TopLeft);
+	r = { x + cx, y, -1, cy };
+	FillRect(hdc, &r, BottomRight);
+	r = { x, y + cy, cx, -1 };
+	FillRect(hdc, &r, BottomRight);
+}
+
+void CPanelContainer::InvertTracker(RECT trackRect) const
+{
+	if(IsRectEmpty(&trackRect))
+	{
+		__debugbreak();
+	}
+	HDC dc = GetDC(GetWindowHandle());
+	HBRUSH old = (HBRUSH)SelectObject(dc, cglobals.HalftoneBrush);
+	PatBlt(dc, trackRect.left, trackRect.top, trackRect.right - trackRect.left, trackRect.bottom - trackRect.top, PATINVERT);
+	if(old)
+	{
+		SelectObject(dc, old);
+	}
+	ReleaseDC(GetWindowHandle(), dc);
 }
 
 CPanelContainer::CPanelContainer()

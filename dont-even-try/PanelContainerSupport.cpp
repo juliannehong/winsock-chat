@@ -2,15 +2,6 @@
 namespace PanelContainer
 {
 
-	CPanelTree::CPanelTree()
-	{
-	}
-
-
-	CPanelTree::~CPanelTree()
-	{
-	}
-
 	CPanelContainerGlobals::CPanelContainerGlobals() :
 		arrow(LoadCursor(nullptr, IDC_ARROW)),
 		hsize(LoadCursor(nullptr, IDC_SIZEWE)),
@@ -22,6 +13,15 @@ namespace PanelContainer
 		cxVScroll(GetSystemMetrics(SM_CXVSCROLL)),
 		cyHScroll(GetSystemMetrics(SM_CYHSCROLL))
 	{
+		WORD bits[8];
+		for(int i = 0; i < 8; i++)
+			bits[i] = (WORD)(0x5555 << (i & 1));
+		HBITMAP patt = CreateBitmap(8, 8, 1, 1, bits);
+		if(patt != NULL)
+		{
+			HalftoneBrush = ::CreatePatternBrush(patt);
+			DeleteObject(patt);
+		}
 	}
 
 	CPanelContainerGlobals::~CPanelContainerGlobals()
@@ -35,5 +35,6 @@ namespace PanelContainer
 		DeleteObject(ButtonHilight);
 		DeleteObject(ButtonShadow);
 		DeleteObject(WindowFrame);
+		DeleteObject(HalftoneBrush);
 	}
 };

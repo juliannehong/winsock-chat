@@ -16,6 +16,7 @@ namespace PanelContainer
 		HBRUSH ButtonHilight;
 		HBRUSH ButtonShadow;
 		HBRUSH WindowFrame;
+		HBRUSH HalftoneBrush;
 		int cxVScroll;
 		int cyHScroll;
 
@@ -26,15 +27,23 @@ namespace PanelContainer
 	enum ObjectType : U8
 	{
 		Object_None,
+		Object_Panel,
 		Object_VerticalSplit,
 		Object_HorizontalSplit,
 	};
 
-	struct TrackedObject
+	struct ObjectID
 	{
 	private:
 		U32 Id;
 	public:
+		ObjectID() : Id(0)
+		{
+		}
+		ObjectID(ObjectType Type, U32 Index = 0) : Id(((U8)(Type) << 24) | (Index & 0xFFFFFF))
+		{
+		}
+
 		FORCEINLINE U8 GetObjectType()
 		{
 			return (U8)(((Id) >> 24) & 0xFF);
@@ -94,12 +103,13 @@ namespace PanelContainer
 		NodeFlag_RightIsNode = 0x04,
 	};
 
-	const U32 InvalidNodeIndex = -1u;
+	const U32 InvalidNodeIndex = (-1);
 
 	struct Node
 	{
 		U32 Flags;
 		U32 RelativePosition;
+		U32 Parent;
 		U32 Left;
 		U32 Right;
 
@@ -111,15 +121,5 @@ namespace PanelContainer
 		}
 	};
 
-	class CPanelTree
-	{
-		//Index 0 is the root. 
-		vector<Node> NodeList;
-
-	public:
-		CPanelTree();
-		~CPanelTree();
-
-	};
 };
 

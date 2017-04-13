@@ -14,10 +14,14 @@ class CPanelContainer :
 	std::vector<CObjectPtr<CWindow>> panels;
 	//the layout of the panels 
 	// (BSP, technically a k-d tree as the planes are axis-aligned).
-	PanelContainer::CPanelTree Layout;
+	vector<PanelContainer::Node> Layout;
 	//Drawing parameters
 	PanelContainer::DrawingParams drawparams;
 	//Tracking parameters
+	PanelContainer::ObjectID TrackedObject;
+	RECT TrackingRect;
+	RECT TrackingLimit;
+	POINT TrackingOffset;
 	bool istracking;
 
 	LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -28,18 +32,25 @@ class CPanelContainer :
 	void InitializeWindowCreateStruct(LPCREATESTRUCT cs);
 
 	bool IsTrackingEnabled() const;
-	void StartTracking(PanelContainer::TrackedObject obj);
+	void StartTracking(PanelContainer::ObjectID obj);
 	void StopTracking(bool DiscardChanges = false);
 
-	PanelContainer::TrackedObject GetObjectToTrack(POINT pt) const;
-	void SetCursorFromTrackedObject(PanelContainer::TrackedObject o);
+	void ComputeBounds(const RECT & rBounds, PanelContainer::Node n, RECT & rSeparator, RECT & rLeft, RECT & rRight) const;
+
+	PanelContainer::ObjectID GetObjectAtPoint(POINT pt) const;
+	PanelContainer::ObjectID GetObjectAtPoint_Rec(POINT pt, U32 index, const RECT& currentbounds) const;
+
+	void SetCursorFromTrackedObject(PanelContainer::ObjectID o) const;
 
 	U32 ConvertPointToIndex(POINT pt) const;
 
 	void RecomputeLayout();
 
-	void DrawClientArea(HDC hdc);
+	void DrawClientArea(HDC hdc) const;
+	void DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& currentbounds) const;
+	void DrawBorder(HDC hdc, const RECT& BorderRect, HBRUSH TopLeft, HBRUSH BottomRight) const;
 
+	void InvertTracker(RECT trackRect) const;
 public:
 	CPanelContainer();
 	virtual ~CPanelContainer();
