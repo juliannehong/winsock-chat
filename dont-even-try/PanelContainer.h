@@ -35,6 +35,9 @@ class CPanelContainer :
 	void StartTracking(PanelContainer::ObjectID obj);
 	void StopTracking(bool DiscardChanges = false);
 
+	RECT GetChildRect(U32 index, bool IsLeft) const;
+	RECT GetLimitRect(U32 index) const;
+
 	void ComputeBounds(const RECT & rBounds, PanelContainer::Node n, RECT & rSeparator, RECT & rLeft, RECT & rRight) const;
 
 	PanelContainer::ObjectID GetObjectAtPoint(POINT pt) const;

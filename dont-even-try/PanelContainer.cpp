@@ -214,13 +214,35 @@ void CPanelContainer::StartTracking(ObjectID obj)
 		//do nothing here.
 		return;
 	}
-	//TODO: create the tracker bar rectangle, limit the range it can travel over, and compute the tracking offset.
-
-	//Grab the mouse and the current window focus
+	// Get the tracking limit, compute the tracking offset, and create the tracker bar rectangle.
+	TrackingLimit = GetLimitRect(obj.GetObjectIndex());
+	Node n = Layout.at(obj.GetObjectIndex());
+	if(n.Flags & NodeFlag_HorizontalSeparator)
+	{
+		//horizontal bar.
+		U32 cy = (drawparams.SplitterY - ((drawparams.BorderY << 1) - 1));
+		TrackingOffset.y = (cy >> 1); //Middle of the bar.
+		TrackingRect.left = TrackingLimit.left;
+		TrackingRect.right = TrackingLimit.right;
+		TrackingRect.top = TrackingLimit.top + n.RelativePosition;
+		TrackingRect.bottom = TrackingRect.top + cy;
+	}
+	else
+	{
+		//vertical bar.
+		U32 cx = (drawparams.SplitterX - ((drawparams.BorderX << 1) - 1));
+		TrackingOffset.x = (cx >> 1); //Middle of the bar.
+		TrackingRect.left = TrackingLimit.left + n.RelativePosition;
+		TrackingRect.right = TrackingRect.left + cx;
+		TrackingRect.top = TrackingLimit.top;
+		TrackingRect.bottom = TrackingLimit.bottom;
+	}
+	//Now grab the mouse and the current window focus
 	SetCapture(GetWindowHandle());
 	SetFocus(GetWindowHandle());
 	//Clear all pending updates
 	RedrawWindow(GetWindowHandle(), nullptr, nullptr, RDW_ALLCHILDREN | RDW_UPDATENOW);
+	//and start tracking.
 	istracking = true;
 	InvertTracker(TrackingRect);
 	TrackedObject = obj;
@@ -238,10 +260,72 @@ void CPanelContainer::StopTracking(bool DiscardChanges)
 	istracking = false;
 	if(!DiscardChanges)
 	{
-		//TODO: Do stuff.
 		//check if the tracking rectangle even moved in the first place.
-
+		//No check for now - difficult to do.
+		OffsetRect(&TrackingRect, -1, -1);
+		switch(TrackedObject.GetObjectType())
+		{
+		case Object_HorizontalSplit:
+			//TODO: Horizontal bar movement.
+			
+			break;
+		case Object_VerticalSplit:
+			//TODO: Vertical bar movement.
+			
+			break;
+		default:
+			//this should never happen - we've bugged it if it does.
+			__debugbreak();
+			return;
+		}
+		RecomputeLayout();
 	}
+}
+
+RECT CPanelContainer::GetChildRect(U32 index, bool IsLeft) const
+{
+	RECT ret;
+	if(index == InvalidNodeIndex)
+	{
+		GetClientRect(GetWindowHandle(), &ret);
+		return ret;
+	}
+	else
+	{
+		Node n = Layout.at(index);
+		ret = GetChildRect(n.Parent, (n.Flags & NodeFlag_IsLeftChild));
+		if(IsLeft)
+		{
+			//Cut away the left hand rectangle.
+			if(n.Flags & NodeFlag_HorizontalSeparator)
+			{
+				ret.bottom += n.RelativePosition;
+			}
+			else
+			{
+				ret.right += n.RelativePosition;
+			}
+		}
+		else
+		{
+			//Cut away the right hand rectangle.
+			if(n.Flags & NodeFlag_HorizontalSeparator)
+			{
+				ret.top += n.RelativePosition + drawparams.SplitterY;
+			}
+			else
+			{
+				ret.left += n.RelativePosition + drawparams.SplitterX;
+			}
+		}
+		return ret;
+	}
+}
+
+RECT CPanelContainer::GetLimitRect(U32 index) const
+{
+	Node n = Layout.at(index);
+	return GetChildRect(n.Parent, (n.Flags & NodeFlag_IsLeftChild));
 }
 
 void CPanelContainer::ComputeBounds(const RECT & rBounds, PanelContainer::Node n, RECT & rSeparator, RECT & rLeft, RECT & rRight) const

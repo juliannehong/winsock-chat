@@ -101,6 +101,8 @@ namespace PanelContainer
 		NodeFlag_HorizontalSeparator = 0x01,
 		NodeFlag_LeftIsNode = 0x02,
 		NodeFlag_RightIsNode = 0x04,
+		NodeFlag_IsRightChild = 0x00,
+		NodeFlag_IsLeftChild = 0x08,
 	};
 
 	const U32 InvalidNodeIndex = (-1);
