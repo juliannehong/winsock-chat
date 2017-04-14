@@ -496,7 +496,7 @@ void CPanelContainer::MovePanels_Rec(HDWP dwp, U32 index, const RECT & bounds)
 			RECT r = bounds;
 			CObjectPtr<CWindow> panel = GetPanel((n.Left == InvalidNodeIndex) ? n.Right : n.Left);
 			if(!panel) return;
-			InflateRect(&r, -1, -1);
+			InflateRect(&r, -drawparams.BorderX, -drawparams.BorderY);
 			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 		}
 		return;
@@ -516,7 +516,7 @@ void CPanelContainer::MovePanels_Rec(HDWP dwp, U32 index, const RECT & bounds)
 		{
 			CObjectPtr<CWindow> panel = GetPanel(n.Left);
 			if(!panel) return;
-			InflateRect(&rLeft, -1, -1);
+			InflateRect(&rLeft, -drawparams.BorderX, -drawparams.BorderY);
 			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, rLeft.left, rLeft.top, rLeft.right - rLeft.left, rLeft.bottom - rLeft.top, SWP_NOZORDER);
 		}
 	}
@@ -531,7 +531,7 @@ void CPanelContainer::MovePanels_Rec(HDWP dwp, U32 index, const RECT & bounds)
 		{
 			CObjectPtr<CWindow> panel = GetPanel(n.Right);
 			if(!panel) return;
-			InflateRect(&rRight, -1, -1);
+			InflateRect(&rRight, -drawparams.BorderX, -drawparams.BorderY);
 			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, rRight.left, rRight.top, rRight.right - rRight.left, rRight.bottom - rRight.top, SWP_NOZORDER);
 		}
 	}

@@ -23,7 +23,7 @@ namespace PanelContainer
 		ButtonFace = CreateSolidBrush(RGB(255,0,0));
 		ButtonHilight = CreateSolidBrush(RGB(0, 255, 0));
 		ButtonShadow = CreateSolidBrush(RGB(0, 0, 255));
-		WindowFrame = CreateSolidBrush(RGB(0, 0, 0));
+		WindowFrame = CreateSolidBrush(RGB(255, 0, 255));
 #else
 		ButtonFace = GetSysColorBrush(COLOR_BTNFACE);
 		ButtonHilight = GetSysColorBrush(COLOR_BTNHIGHLIGHT);
