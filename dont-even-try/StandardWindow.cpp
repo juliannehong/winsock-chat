@@ -11,7 +11,7 @@ LRESULT CStandardWindow::SubclassProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 	return DefSubclassProc(hwnd, msg, wparam, lparam);
 }
 
-bool CStandardWindow::CreateWindowHandle(HWND & hWindow, HWND parent)
+bool CStandardWindow::CreateWindowHandle(HWND parent)
 {
 	CREATESTRUCT cs = { 0 };
 	InitializeCreateStruct(&cs);
@@ -19,7 +19,7 @@ bool CStandardWindow::CreateWindowHandle(HWND & hWindow, HWND parent)
 	{
 		cs.style |= WS_CHILD;
 	}
-	hWindow = CreateWindowEx(cs.dwExStyle,
+	HWND hWindow = CreateWindowEx(cs.dwExStyle,
 							 cs.lpszClass,
 							 cs.lpszName,
 							 cs.style,

@@ -81,6 +81,9 @@
     <ClCompile Include="PanelContainerSupport.cpp">
       <Filter>Source Files\Windowing\Framework\Support</Filter>
     </ClCompile>
+    <ClCompile Include="EditControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="PanelContainerSupport.h">
       <Filter>Header Files\Windowing\Framework\Support</Filter>
+    </ClInclude>
+    <ClInclude Include="EditControl.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

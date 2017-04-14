@@ -37,9 +37,8 @@ LRESULT CCustomWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
+bool CCustomWindow::CreateWindowHandle(HWND parent)
 {
-	hwnd = nullptr;
 	//Is the window class already registered?
 	WNDCLASS wc = { 0 };
 	if(!GetClassInfo(GetModuleHandle(nullptr), GetWindowClassName(), &wc))
@@ -66,7 +65,7 @@ bool CCustomWindow::CreateWindowHandle(HWND & hwnd, HWND parent)
 	}
 	cs.hwndParent = parent;
 	cs.lpszClass = wc.lpszClassName;
-	hwnd = CreateWindowEx(cs.dwExStyle,
+	HWND hwnd = CreateWindowEx(cs.dwExStyle,
 						  cs.lpszClass,
 						  cs.lpszName,
 						  cs.style,
@@ -91,7 +90,7 @@ LRESULT CCustomWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 	{
 	case WM_CREATE:
 		{
-			if(!CreateChildWindows(hwnd))
+			if(!CreateChildWindows())
 			{
 				return FALSE;
 			}
@@ -132,7 +131,7 @@ void CCustomWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 	//default has no menu items.
 }
 
-bool CCustomWindow::CreateChildWindows(HWND parent)
+bool CCustomWindow::CreateChildWindows()
 {
 	//no child windows by default.
 	return true;

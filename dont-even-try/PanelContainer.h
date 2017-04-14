@@ -3,6 +3,13 @@
 #include "CustomWindow.h"
 #include "PanelContainerSupport.h"
 
+enum SeparatorType
+{
+	Separator_Vertical,
+	Separator_Horizontal,
+};
+
+
 class CPanelContainer :
 	public CCustomWindow
 {
@@ -20,6 +27,7 @@ class CPanelContainer :
 	//Tracking parameters
 	PanelContainer::ObjectID TrackedObject;
 	RECT TrackingRect;
+	RECT OriginalRect;
 	RECT TrackingLimit;
 	POINT TrackingOffset;
 	bool istracking;
@@ -48,6 +56,7 @@ class CPanelContainer :
 	U32 ConvertPointToIndex(POINT pt) const;
 
 	void RecomputeLayout();
+	void MovePanels_Rec(HDWP dwp, U32 index, const RECT& bounds);
 
 	void DrawClientArea(HDC hdc) const;
 	void DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& currentbounds) const;
@@ -59,9 +68,13 @@ public:
 	virtual ~CPanelContainer();
 
 	U32 GetNumPanels() const;
-	bool IsIndexValid(U32 Index) const;
+	bool IsLayoutIndexValid(U32 Index) const;
+	bool IsPanelIndexValid(U32 Index) const;
 	bool IsPointValid(POINT pt) const;
 	CObjectPtr<CWindow> GetPanel(U32 Index) const;
 	CObjectPtr<CWindow> GetPanelAtPoint(POINT pt) const;
+
+	U32 AddSeparator(U32 Parent, SeparatorType Type, float StartingDivision, bool LeftHandChild);
+	U32 AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool LeftHandChild);
 };
 

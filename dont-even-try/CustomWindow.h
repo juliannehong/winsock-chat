@@ -6,11 +6,11 @@ class CCustomWindow :
 {
 	static LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	bool CreateWindowHandle(HWND& hwnd, HWND parent);
+	bool CreateWindowHandle(HWND parent);
 protected:
 	virtual LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	virtual bool CreateChildWindows(HWND parent);
+	virtual bool CreateChildWindows();
 	virtual LPTSTR GetWindowClassName() const = 0;
 	virtual void InitializeWindowClass(LPWNDCLASS wc) = 0;
 	virtual void InitializeWindowCreateStruct(LPCREATESTRUCT cs) = 0;

@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EditControl.cpp" />
     <ClCompile Include="PanelContainerSupport.cpp" />
     <ClCompile Include="ChatMain.cpp" />
     <ClCompile Include="ChatPanel.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EditControl.h" />
     <ClInclude Include="PanelContainerSupport.h" />
     <ClInclude Include="ChatPanel.h" />
     <ClInclude Include="CustomWindow.h" />

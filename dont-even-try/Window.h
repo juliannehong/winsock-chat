@@ -12,7 +12,7 @@ protected:
 	void ClearPointerFromHandle(HWND hwnd);
 	static CObjectPtr<CWindow> GetClassPointerAndClear(HWND hwnd);
 
-	virtual bool CreateWindowHandle(HWND &hWindow, HWND parent) = 0;
+	virtual bool CreateWindowHandle(HWND parent) = 0;
 public:
 	CWindow();
 	virtual ~CWindow();
@@ -21,7 +21,7 @@ public:
 	
 	HWND GetWindowHandle() const;
 	
-	bool Create(HWND parent = nullptr);
+	bool Create(CObjectPtr<CWindow> parent = nullptr);
 
 	void Resize(SIZE NewSize);
 	void Move(POINT NewPosition);

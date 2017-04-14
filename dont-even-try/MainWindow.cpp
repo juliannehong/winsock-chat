@@ -41,9 +41,22 @@ void CMainWindow::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 	cs->cy = 600;
 }
 
-bool CMainWindow::CreateChildWindows(HWND hwnd)
+bool CMainWindow::CreateChildWindows()
 {
-	return cp->Create(hwnd) && stat->Create(hwnd);
+	bool ret = cp->Create(this);
+	ret &= stat->Create(this);
+	ret &= edit1->Create(cp);
+	ret &= edit2->Create(cp);
+	ret &= edit3->Create(cp);
+	edit1->SetEditText(L"Hello World 1");
+	edit2->SetEditText(L"Hello World 2");
+	edit3->SetEditText(L"Hello World 3");
+	U32 main = cp->AddSeparator(-1, Separator_Horizontal, 0.75f, false);
+	cp->AddPanel(main, edit1, false);
+	U32 sub = cp->AddSeparator(main, Separator_Vertical, 0.5f, true);
+	cp->AddPanel(sub, edit2, true);
+	cp->AddPanel(sub, edit3, false);
+	return ret;
 }
 
 void CMainWindow::ResizeChildWindows(RECT NewSize)
@@ -83,7 +96,10 @@ void CMainWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 
 CMainWindow::CMainWindow() : 
 	cp(new CChatPanel(), true),
-	stat(new CStatusBar(), true)
+	stat(new CStatusBar(), true),
+	edit1(new CEditControl(true), true),
+	edit2(new CEditControl(true), true),
+	edit3(new CEditControl(true), true)
 {
 	//AddChildWindow(new CChatPanel(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_TOP | LATCH_PARENT_LEFT);
 	//AddChildWindow(new CStatusBar(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_LEFT | LATCH_PARENT_BOTTOM | FIXED_HEIGHT);

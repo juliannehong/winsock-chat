@@ -39,6 +39,7 @@ void CWindow::SavePointerToHandle(HWND hwnd)
 	{
 		AddRef();
 		SetProp(hwnd, WindowBindingAtom, this);
+		this->hwnd = hwnd;
 	}
 }
 
@@ -46,6 +47,7 @@ void CWindow::ClearPointerFromHandle(HWND hwnd)
 {
 	if(hwnd != nullptr)
 	{
+		this->hwnd = nullptr;
 		RemoveProp(hwnd, WindowBindingAtom);
 		Release();
 	}
@@ -58,6 +60,7 @@ CObjectPtr<CWindow> CWindow::GetClassPointerAndClear(HWND hwnd)
 		return nullptr;
 	}
 	CObjectPtr<CWindow> ret = (CWindow*)GetProp(hwnd, WindowBindingAtom);
+	ret->hwnd = nullptr;
 	RemoveProp(hwnd, WindowBindingAtom);
 	ret->Release();
 	return ret;
@@ -76,9 +79,9 @@ CWindow::~CWindow()
 	}
 }
 
-bool CWindow::Create(HWND parent)
+bool CWindow::Create(CObjectPtr<CWindow> parent)
 {
-	if(!CreateWindowHandle(hwnd, parent))
+	if(!CreateWindowHandle(parent ? parent->GetWindowHandle() : nullptr))
 	{
 		return false;
 	}
@@ -101,6 +104,7 @@ void CWindow::Move(POINT NewPosition)
 
 void CWindow::ResizeAndMove(SIZE NewSize, POINT NewPosition)
 {
+	SetWindowPos(hwnd, nullptr, NewPosition.x, NewPosition.y, NewSize.cx, NewSize.cy, SWP_NOZORDER);
 }
 
 void CWindow::Close()

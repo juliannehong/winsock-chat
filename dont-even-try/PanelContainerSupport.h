@@ -110,7 +110,7 @@ namespace PanelContainer
 	struct Node
 	{
 		U32 Flags;
-		U32 RelativePosition;
+		float RelativePosition;
 		U32 Parent;
 		U32 Left;
 		U32 Right;

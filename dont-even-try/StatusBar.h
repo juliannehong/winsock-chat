@@ -4,7 +4,7 @@ class CStatusBar :
 	public CStandardWindow
 {
 
-	bool InitializeCreateStruct(LPCREATESTRUCT cs);
+	void InitializeCreateStruct(LPCREATESTRUCT cs);
 
 public:
 	CStatusBar();

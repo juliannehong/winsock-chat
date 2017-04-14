@@ -21,6 +21,8 @@ ON_WM_PRINTCLIENT()
 ON_WM_MOUSEWHEEL()
 */
 
+CPanelContainerGlobals CPanelContainer::cglobals;
+
 LRESULT CPanelContainer::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	assert(hwnd == GetWindowHandle());
@@ -199,7 +201,7 @@ void CPanelContainer::InitializeWindowClass(LPWNDCLASS wc)
 
 void CPanelContainer::InitializeWindowCreateStruct(LPCREATESTRUCT cs)
 {
-	cs->style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VSCROLL;
+	cs->style = WS_CHILD;
 }
 
 bool CPanelContainer::IsTrackingEnabled() const
@@ -224,7 +226,7 @@ void CPanelContainer::StartTracking(ObjectID obj)
 		TrackingOffset.y = (cy >> 1); //Middle of the bar.
 		TrackingRect.left = TrackingLimit.left;
 		TrackingRect.right = TrackingLimit.right;
-		TrackingRect.top = TrackingLimit.top + n.RelativePosition;
+		TrackingRect.top = (U32)(TrackingLimit.bottom * n.RelativePosition) + drawparams.BorderY;
 		TrackingRect.bottom = TrackingRect.top + cy;
 	}
 	else
@@ -232,7 +234,7 @@ void CPanelContainer::StartTracking(ObjectID obj)
 		//vertical bar.
 		U32 cx = (drawparams.SplitterX - ((drawparams.BorderX << 1) - 1));
 		TrackingOffset.x = (cx >> 1); //Middle of the bar.
-		TrackingRect.left = TrackingLimit.left + n.RelativePosition;
+		TrackingRect.left = (U32)(TrackingLimit.right * n.RelativePosition) + drawparams.BorderX;
 		TrackingRect.right = TrackingRect.left + cx;
 		TrackingRect.top = TrackingLimit.top;
 		TrackingRect.bottom = TrackingLimit.bottom;
@@ -245,6 +247,7 @@ void CPanelContainer::StartTracking(ObjectID obj)
 	//and start tracking.
 	istracking = true;
 	InvertTracker(TrackingRect);
+	OriginalRect = TrackingRect;
 	TrackedObject = obj;
 	SetCursorFromTrackedObject(TrackedObject);
 }
@@ -260,24 +263,31 @@ void CPanelContainer::StopTracking(bool DiscardChanges)
 	istracking = false;
 	if(!DiscardChanges)
 	{
-		//check if the tracking rectangle even moved in the first place.
-		//No check for now - difficult to do.
-		OffsetRect(&TrackingRect, -1, -1);
+		//apply the movement of the tracking rect, if the rect changed.
+		if(EqualRect(&TrackingRect, &OriginalRect))
+		{
+			//No change - do nothing.
+			return;
+		}
+		RECT r;
+		GetClientRect(GetWindowHandle(), &r);
+		//There was a change - figure out what it was.
+		Node n = Layout.at(TrackedObject.GetObjectIndex());
 		switch(TrackedObject.GetObjectType())
 		{
 		case Object_HorizontalSplit:
-			//TODO: Horizontal bar movement.
-			
+			n.RelativePosition += (TrackingRect.top - OriginalRect.top) / (float)(r.bottom - r.top);
 			break;
 		case Object_VerticalSplit:
-			//TODO: Vertical bar movement.
-			
+			n.RelativePosition += (TrackingRect.left - OriginalRect.left) / (float)(r.right - r.left);
 			break;
 		default:
 			//this should never happen - we've bugged it if it does.
 			__debugbreak();
 			return;
 		}
+		Layout[TrackedObject.GetObjectIndex()] = n;
+		//now recursively apply sizing limits and move the windows.
 		RecomputeLayout();
 	}
 }
@@ -299,11 +309,11 @@ RECT CPanelContainer::GetChildRect(U32 index, bool IsLeft) const
 			//Cut away the left hand rectangle.
 			if(n.Flags & NodeFlag_HorizontalSeparator)
 			{
-				ret.bottom += n.RelativePosition;
+				ret.bottom = (U32)(ret.bottom * n.RelativePosition);
 			}
 			else
 			{
-				ret.right += n.RelativePosition;
+				ret.right = (U32)(ret.right * n.RelativePosition);
 			}
 		}
 		else
@@ -311,11 +321,11 @@ RECT CPanelContainer::GetChildRect(U32 index, bool IsLeft) const
 			//Cut away the right hand rectangle.
 			if(n.Flags & NodeFlag_HorizontalSeparator)
 			{
-				ret.top += n.RelativePosition + drawparams.SplitterY;
+				ret.top = (U32)(ret.bottom * n.RelativePosition) + drawparams.SplitterY;
 			}
 			else
 			{
-				ret.left += n.RelativePosition + drawparams.SplitterX;
+				ret.left += (U32)(ret.right * n.RelativePosition) + drawparams.SplitterX;
 			}
 		}
 		return ret;
@@ -324,6 +334,10 @@ RECT CPanelContainer::GetChildRect(U32 index, bool IsLeft) const
 
 RECT CPanelContainer::GetLimitRect(U32 index) const
 {
+	if(index >= Layout.size())
+	{
+		return RECT();
+	}
 	Node n = Layout.at(index);
 	return GetChildRect(n.Parent, (n.Flags & NodeFlag_IsLeftChild));
 }
@@ -334,14 +348,14 @@ void CPanelContainer::ComputeBounds(const RECT & rBounds, PanelContainer::Node n
 	if(n.Flags & NodeFlag_HorizontalSeparator)
 	{
 		//l, t, r, b
-		rSeparator.top += n.RelativePosition;
+		rSeparator.top = (U32)(rBounds.bottom * n.RelativePosition);
 		rSeparator.bottom = rSeparator.top + drawparams.SplitterY;
 		rLeft.bottom = rSeparator.top;
 		rRight.top = rSeparator.bottom;
 	}
 	else
 	{
-		rSeparator.left += n.RelativePosition;
+		rSeparator.left = (U32)(rBounds.right * n.RelativePosition);
 		rSeparator.right = rSeparator.left + drawparams.SplitterX;
 		rLeft.right = rSeparator.left;
 		rRight.left = rSeparator.right;
@@ -350,12 +364,22 @@ void CPanelContainer::ComputeBounds(const RECT & rBounds, PanelContainer::Node n
 
 ObjectID CPanelContainer::GetObjectAtPoint_Rec(POINT pt, U32 index, const RECT& currentbounds) const
 {
+	if(index >= Layout.size())
+	{
+		return ObjectID(Object_None);
+	}
 	Node n = Layout.at(index);
 	if(n.Left == InvalidNodeIndex || n.Right == InvalidNodeIndex)
 	{
-		//should never happen - all nodes should point to subnodes or to panes.
-		__debugbreak();
-		return ObjectID(Object_None);
+		//if both are null, we hit nothing. if one is null, we hit a panel.
+		if(n.Left == n.Right)
+		{
+			return ObjectID(Object_None);
+		}
+		else
+		{
+			return ObjectID(Object_Panel, n.Left == InvalidNodeIndex ? n.Right : n.Left);
+		}
 	}
 	RECT splitbounds, rLeft, rRight;
 	ComputeBounds(currentbounds, n, splitbounds, rLeft, rRight);
@@ -402,10 +426,10 @@ void CPanelContainer::SetCursorFromTrackedObject(ObjectID o) const
 	switch(o.GetObjectType())
 	{
 	case Object_HorizontalSplit:
-		SetCursor(cglobals.hsize);
+		SetCursor(cglobals.vsize);
 		break;
 	case Object_VerticalSplit:
-		SetCursor(cglobals.vsize);
+		SetCursor(cglobals.hsize);
 		break;
 	default:
 		SetCursor(cglobals.arrow);
@@ -425,19 +449,98 @@ U32 CPanelContainer::ConvertPointToIndex(POINT pt) const
 
 void CPanelContainer::RecomputeLayout()
 {
+	if(Layout.size() == 0)
+	{
+		//nothing to recompute.
+		return;
+	}
 	//TODO: Recompute the layout based on changes in size or tracking.
+	//due to FPU use, recomputation is unnecessary. Just reposition the windows.
+	//Start the repositioning
+	//This should be no larger than 2^24.
+	HDWP dwp = BeginDeferWindowPos((int)(Layout.size() + 1));
+	//Move the windows
+	RECT cr;
+	GetClientRect(GetWindowHandle(), &cr);
+	MovePanels_Rec(dwp, 0, cr);
+	//End the repositioning - this will move everything at once.
+	if(dwp == nullptr || !EndDeferWindowPos(dwp))
+	{
+		if(IsDebuggerPresent())
+		{
+			OutputDebugString(L"Low on resources - fell back on SetWindowPos instead of DeferWindowPos.\n");
+		}
+	}
+	DrawClientArea(nullptr);
+}
+
+void CPanelContainer::MovePanels_Rec(HDWP dwp, U32 index, const RECT & bounds)
+{
+	//get the node at this position.
+	if(index >= Layout.size())
+	{
+		return;
+	}
+	//get the root element.
+	Node n = Layout.at(index);
+	if(n.Left == InvalidNodeIndex || n.Right == InvalidNodeIndex)
+	{
+		if(n.Left == n.Right)
+		{
+			//Both null - do nothing.
+			return;
+		}
+		else
+		{
+			//one is null. move the other to cover everything.
+			RECT r = bounds;
+			CObjectPtr<CWindow> panel = GetPanel((n.Left == InvalidNodeIndex) ? n.Right : n.Left);
+			if(!panel) return;
+			InflateRect(&r, -1, -1);
+			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
+		}
+		return;
+	}
+	RECT splitbounds, rLeft, rRight;
+	ComputeBounds(bounds, n, splitbounds, rLeft, rRight);
+	//Now subdivide the bounding rectangle by the splitter.
+	if(!IsRectEmpty(&rLeft))
+	{
+		//rect should have something done.
+		if(n.Flags & NodeFlag_LeftIsNode)
+		{
+			//recursively do things.
+			MovePanels_Rec(dwp, n.Left, rLeft);
+		}
+		else
+		{
+			CObjectPtr<CWindow> panel = GetPanel(n.Left);
+			if(!panel) return;
+			InflateRect(&rLeft, -1, -1);
+			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, rLeft.left, rLeft.top, rLeft.right - rLeft.left, rLeft.bottom - rLeft.top, SWP_NOZORDER);
+		}
+	}
+	if(!IsRectEmpty(&rRight))
+	{
+		if(n.Flags & NodeFlag_RightIsNode)
+		{
+			//Recursively do things.
+			MovePanels_Rec(dwp, n.Right, rRight);
+		}
+		else
+		{
+			CObjectPtr<CWindow> panel = GetPanel(n.Right);
+			if(!panel) return;
+			InflateRect(&rRight, -1, -1);
+			DeferWindowPos(dwp, panel->GetWindowHandle(), nullptr, rRight.left, rRight.top, rRight.right - rRight.left, rRight.bottom - rRight.top, SWP_NOZORDER);
+		}
+	}
 }
 
 void CPanelContainer::DrawClientArea(HDC hdc) const
 {
 	RECT r = { 0 };
 	GetClientRect(GetWindowHandle(), &r);
-	if(!hdc)
-	{
-		//force an update. This shouldn't happen, but we'll handle it gracefully.
-		RedrawWindow(GetWindowHandle(), &r, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
-		return;
-	}
 	//now recursively draw the BSP tree.
 	DrawClientAreaRec(hdc, 0, r);
 }
@@ -446,18 +549,46 @@ void CPanelContainer::DrawClientArea(HDC hdc) const
 // While traversing, when we've resolved a rect, draw the border of that rect.
 void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& currentbounds) const
 {
+	//if we're off the end, drop out.
+	if(currentindex >= Layout.size())
+	{
+		return;
+	}
 	//get the root element.
 	Node n = Layout.at(currentindex);
 	if(n.Left == InvalidNodeIndex || n.Right == InvalidNodeIndex)
 	{
-		//should never happen - all nodes should point to subnodes or to panes.
-		__debugbreak();
+		//we may be in the process of building the tree or modifying it. 
+		//Here's what we define in degenerate cases:
+		// Left or Right child is null - Other child takes up the whole area.
+		//Both children are null - Region is erased with the window frame color.
+		RECT r = currentbounds;
+		DrawBorder(hdc, r, cglobals.ButtonShadow, cglobals.ButtonHilight);
+		InflateRect(&r, -1, -1);
+		if(n.Left == n.Right)
+		{
+			//Both null - fill the rect with the background color.
+			FillRect(hdc, &r, cglobals.WindowFrame);
+		}
+		else
+		{
+			DrawBorder(hdc, r, cglobals.WindowFrame, cglobals.ButtonFace);
+		}
 		return;
 	}
 	RECT splitbounds, rLeft, rRight;
 	ComputeBounds(currentbounds, n, splitbounds, rLeft, rRight);
 	//draw the separator.
-	FillRect(hdc, &splitbounds, cglobals.ButtonFace);
+	if(hdc)
+	{
+		FillRect(hdc, &splitbounds, cglobals.ButtonFace);
+	}
+	else
+	{
+		//force an update. 
+		RedrawWindow(GetWindowHandle(), &splitbounds, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
+		return;
+	}
 	//Now subdivide the bounding rectangle by the splitter.
 	if(!IsRectEmpty(&rLeft))
 	{
@@ -469,10 +600,19 @@ void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& c
 		}
 		else
 		{
-			//draw the border around the current panel.
-			DrawBorder(hdc, rLeft, cglobals.ButtonShadow, cglobals.ButtonHilight);
-			InflateRect(&rLeft, -1, -1);
-			DrawBorder(hdc, rLeft, cglobals.WindowFrame, cglobals.ButtonFace);
+			if(hdc)
+			{
+				//draw the border around the current panel.
+				DrawBorder(hdc, rLeft, cglobals.ButtonShadow, cglobals.ButtonHilight);
+				InflateRect(&rLeft, -1, -1);
+				DrawBorder(hdc, rLeft, cglobals.WindowFrame, cglobals.ButtonFace);
+			}
+			else
+			{
+				//force an update.
+				RedrawWindow(GetWindowHandle(), &rLeft, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
+				return;
+			}	
 		}
 	}
 	if(!IsRectEmpty(&rRight))
@@ -484,10 +624,19 @@ void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& c
 		}
 		else
 		{
-			//draw the border around the current panel.
-			DrawBorder(hdc, rRight, cglobals.ButtonShadow, cglobals.ButtonHilight);
-			InflateRect(&rLeft, -1, -1);
-			DrawBorder(hdc, rLeft, cglobals.WindowFrame, cglobals.ButtonFace);
+			if(hdc)
+			{
+				//draw the border around the current panel.
+				DrawBorder(hdc, rRight, cglobals.ButtonShadow, cglobals.ButtonHilight);
+				InflateRect(&rRight, -1, -1);
+				DrawBorder(hdc, rRight, cglobals.WindowFrame, cglobals.ButtonFace);
+			}
+			else
+			{
+				//force an update.
+				RedrawWindow(GetWindowHandle(), &rRight, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
+				return;
+			}
 		}
 	}
 }
@@ -498,13 +647,13 @@ void CPanelContainer::DrawBorder(HDC hdc, const RECT& BorderRect, HBRUSH TopLeft
 		y = BorderRect.top,
 		cx = BorderRect.right - BorderRect.left,
 		cy = BorderRect.bottom - BorderRect.top;
-	RECT r = { x, y, cx - 1, 1 };
+	RECT r = { x, y, x + (cx - 1), y + 1 };
 	FillRect(hdc, &r, TopLeft);
-	r = { x, y, 1, cy - 1 };
+	r = { x, y, x + 1,  y + (cy - 1) };
 	FillRect(hdc, &r, TopLeft);
-	r = { x + cx, y, -1, cy };
+	r = { x + cx, y, x + cx - 1, y + cy };
 	FillRect(hdc, &r, BottomRight);
-	r = { x, y + cy, cx, -1 };
+	r = { x, y + cy, x + cx, y + cy - 1 };
 	FillRect(hdc, &r, BottomRight);
 }
 
@@ -524,7 +673,13 @@ void CPanelContainer::InvertTracker(RECT trackRect) const
 	ReleaseDC(GetWindowHandle(), dc);
 }
 
-CPanelContainer::CPanelContainer()
+CPanelContainer::CPanelContainer():
+	TrackedObject(Object_None),
+	TrackingRect{ 0,0,0,0 },
+	OriginalRect{ 0,0,0,0 },
+	TrackingLimit{ 0,0,0,0 },
+	TrackingOffset{ 0,0 },
+	istracking(false)
 {
 }
 
@@ -537,7 +692,12 @@ U32 CPanelContainer::GetNumPanels() const
 	return (U32)panels.size();
 }
 
-bool CPanelContainer::IsIndexValid(U32 Index) const
+bool CPanelContainer::IsLayoutIndexValid(U32 Index) const
+{
+	return (Index < Layout.size() && Index >= 0);
+}
+
+bool CPanelContainer::IsPanelIndexValid(U32 Index) const
 {
 	return (Index < panels.size() && Index >= 0);
 }
@@ -551,7 +711,7 @@ bool CPanelContainer::IsPointValid(POINT pt) const
 
 CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 {
-	if(IsIndexValid(Index))
+	if(IsPanelIndexValid(Index))
 	{
 		return panels[Index];
 	}
@@ -561,5 +721,87 @@ CObjectPtr<CWindow> CPanelContainer::GetPanel(U32 Index) const
 CObjectPtr<CWindow> CPanelContainer::GetPanelAtPoint(POINT pt) const
 {
 	return GetPanel(ConvertPointToIndex(pt));
+}
+
+U32 CPanelContainer::AddSeparator(U32 Parent, SeparatorType Type, float StartingDivision, bool LeftHandChild)
+{
+	if(Parent == InvalidNodeIndex)
+	{
+		if(Layout.size() == 0)
+		{
+			//create a root element and return 0.
+			Node n;
+			n.Left = InvalidNodeIndex;
+			n.Right = InvalidNodeIndex;
+			n.RelativePosition = StartingDivision;
+			n.Parent = InvalidNodeIndex;
+			n.Flags = (Type == Separator_Horizontal) ? NodeFlag_HorizontalSeparator : NodeFlag_VerticalSeparator;
+			Layout.insert(Layout.begin(), n);
+			return 0;
+		}
+		return InvalidNodeIndex;
+	}
+	if(IsLayoutIndexValid(Parent))
+	{
+		//set up a node structure.
+		//is the chosen child valid for the parent?
+		Node p = Layout[Parent];
+		if((LeftHandChild && p.Left != InvalidNodeIndex) ||
+			(!LeftHandChild && p.Right != InvalidNodeIndex))
+		{
+			return InvalidNodeIndex;
+		}
+		Node n;
+		n.Left = InvalidNodeIndex;
+		n.Right = InvalidNodeIndex;
+		n.Parent = Parent;
+		n.RelativePosition = StartingDivision;
+		n.Flags = (Type == Separator_Horizontal) ? NodeFlag_HorizontalSeparator : NodeFlag_VerticalSeparator;
+		n.Flags |= (LeftHandChild ? NodeFlag_IsLeftChild : NodeFlag_IsRightChild);
+		U32 ret = (U32)Layout.size();
+		Layout.push_back(n);
+		if(LeftHandChild)
+		{
+			p.Left = ret;
+			p.Flags |= NodeFlag_LeftIsNode;
+		}
+		else
+		{
+			p.Right = ret;
+			p.Flags |= NodeFlag_RightIsNode;
+		}
+		Layout[Parent] = p;
+		return ret;
+	}
+	return InvalidNodeIndex;
+}
+
+U32 CPanelContainer::AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool LeftHandChild)
+{
+	if(!IsLayoutIndexValid(Parent))
+	{
+		return InvalidNodeIndex;
+	}
+	Node n = Layout.at(Parent);
+	if((LeftHandChild && n.Left != InvalidNodeIndex) ||
+		(!LeftHandChild && n.Right != InvalidNodeIndex))
+	{
+		return InvalidNodeIndex;
+	}
+	//we have a slot. push the panel into the panel list.
+	U32 index = (U32)panels.size();
+	panels.push_back(NewPanel);
+	if(LeftHandChild)
+	{
+		n.Left = index;
+		n.Flags &= ~NodeFlag_LeftIsNode;
+	}
+	else
+	{
+		n.Right = index;
+		n.Flags &= ~NodeFlag_RightIsNode;
+	}
+	Layout[Parent] = n;
+	return index;
 }
 

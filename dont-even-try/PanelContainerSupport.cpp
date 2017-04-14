@@ -6,10 +6,6 @@ namespace PanelContainer
 		arrow(LoadCursor(nullptr, IDC_ARROW)),
 		hsize(LoadCursor(nullptr, IDC_SIZEWE)),
 		vsize(LoadCursor(nullptr, IDC_SIZENS)),
-		ButtonFace(GetSysColorBrush(COLOR_BTNFACE)),
-		ButtonHilight(GetSysColorBrush(COLOR_BTNHIGHLIGHT)),
-		ButtonShadow(GetSysColorBrush(COLOR_BTNSHADOW)),
-		WindowFrame(GetSysColorBrush(COLOR_WINDOWFRAME)),
 		cxVScroll(GetSystemMetrics(SM_CXVSCROLL)),
 		cyHScroll(GetSystemMetrics(SM_CYHSCROLL))
 	{
@@ -22,6 +18,18 @@ namespace PanelContainer
 			HalftoneBrush = ::CreatePatternBrush(patt);
 			DeleteObject(patt);
 		}
+#if 1
+		//very visible borders (for debugging)
+		ButtonFace = CreateSolidBrush(RGB(255,0,0));
+		ButtonHilight = CreateSolidBrush(RGB(0, 255, 0));
+		ButtonShadow = CreateSolidBrush(RGB(0, 0, 255));
+		WindowFrame = CreateSolidBrush(RGB(0, 0, 0));
+#else
+		ButtonFace = GetSysColorBrush(COLOR_BTNFACE);
+		ButtonHilight = GetSysColorBrush(COLOR_BTNHIGHLIGHT);
+		ButtonShadow = GetSysColorBrush(COLOR_BTNSHADOW);
+		WindowFrame = GetSysColorBrush(COLOR_WINDOWFRAME);
+#endif
 	}
 
 	CPanelContainerGlobals::~CPanelContainerGlobals()
