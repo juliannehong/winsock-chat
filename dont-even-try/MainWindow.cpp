@@ -51,9 +51,9 @@ bool CMainWindow::CreateChildWindows()
 	edit1->SetEditText(L"Hello World 1");
 	edit2->SetEditText(L"Hello World 2");
 	edit3->SetEditText(L"Hello World 3");
-	U32 main = cp->AddSeparator(-1, Separator_Horizontal, 0.75f, false);
-	cp->AddPanel(main, edit1, false);
-	U32 sub = cp->AddSeparator(main, Separator_Vertical, 0.5f, true);
+	U32 main = cp->AddSeparator(0, Separator_Vertical, 0.25f, false);
+	cp->AddPanel(main, edit1, true);
+	U32 sub = cp->AddSeparator(main, Separator_Horizontal, 0.75f, false);
 	cp->AddPanel(sub, edit2, true);
 	cp->AddPanel(sub, edit3, false);
 	return ret;

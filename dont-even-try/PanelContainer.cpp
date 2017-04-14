@@ -725,7 +725,7 @@ CObjectPtr<CWindow> CPanelContainer::GetPanelAtPoint(POINT pt) const
 
 U32 CPanelContainer::AddSeparator(U32 Parent, SeparatorType Type, float StartingDivision, bool LeftHandChild)
 {
-	if(Parent == InvalidNodeIndex)
+	if(!IsLayoutIndexValid(Parent))
 	{
 		if(Layout.size() == 0)
 		{
@@ -741,7 +741,7 @@ U32 CPanelContainer::AddSeparator(U32 Parent, SeparatorType Type, float Starting
 		}
 		return InvalidNodeIndex;
 	}
-	if(IsLayoutIndexValid(Parent))
+	else
 	{
 		//set up a node structure.
 		//is the chosen child valid for the parent?
@@ -773,7 +773,6 @@ U32 CPanelContainer::AddSeparator(U32 Parent, SeparatorType Type, float Starting
 		Layout[Parent] = p;
 		return ret;
 	}
-	return InvalidNodeIndex;
 }
 
 U32 CPanelContainer::AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool LeftHandChild)
