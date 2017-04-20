@@ -80,6 +80,16 @@ void CMainWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 	case ID_FILE_EXIT:
 		Close();
 		break;
+	case ID_EDIT_DEBUGON:
+		cp->EnableDebugMode(true);
+		EnableMenuItem(GetMenu(GetWindowHandle()), ID_EDIT_DEBUGOFF, MF_ENABLED);
+		EnableMenuItem(GetMenu(GetWindowHandle()), ID_EDIT_DEBUGON, MF_GRAYED);
+		break;
+	case ID_EDIT_DEBUGOFF:
+		cp->EnableDebugMode(false);
+		EnableMenuItem(GetMenu(GetWindowHandle()), ID_EDIT_DEBUGON, MF_ENABLED);
+		EnableMenuItem(GetMenu(GetWindowHandle()), ID_EDIT_DEBUGOFF, MF_GRAYED);
+		break;
 	case ID_EDIT_CUT:
 	case ID_EDIT_COPY:
 	case ID_EDIT_PASTE:

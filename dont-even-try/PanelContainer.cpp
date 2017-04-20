@@ -587,7 +587,7 @@ void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& c
 	{
 		//force an update. 
 		RedrawWindow(GetWindowHandle(), &splitbounds, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
-		return;
+		//return;
 	}
 	//Now subdivide the bounding rectangle by the splitter.
 	if(!IsRectEmpty(&rLeft))
@@ -611,7 +611,6 @@ void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& c
 			{
 				//force an update.
 				RedrawWindow(GetWindowHandle(), &rLeft, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
-				return;
 			}	
 		}
 	}
@@ -635,7 +634,6 @@ void CPanelContainer::DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& c
 			{
 				//force an update.
 				RedrawWindow(GetWindowHandle(), &rRight, nullptr, RDW_INVALIDATE | RDW_NOCHILDREN);
-				return;
 			}
 		}
 	}
@@ -802,5 +800,18 @@ U32 CPanelContainer::AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool Lef
 	}
 	Layout[Parent] = n;
 	return index;
+}
+
+void CPanelContainer::EnableDebugMode(bool Enable)
+{
+	if(Enable)
+	{
+		cglobals.SwapToDebug();
+	}
+	else
+	{
+		cglobals.SwapToNormal();
+	}
+	RedrawWindow(GetWindowHandle(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 

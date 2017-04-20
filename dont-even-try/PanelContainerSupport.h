@@ -16,12 +16,22 @@ namespace PanelContainer
 		HBRUSH ButtonHilight;
 		HBRUSH ButtonShadow;
 		HBRUSH WindowFrame;
+		/* Debug brushes */
+		HBRUSH DbgButtonFace;
+		HBRUSH DbgButtonHilight;
+		HBRUSH DbgButtonShadow;
+		HBRUSH DbgWindowFrame;
 		HBRUSH HalftoneBrush;
 		int cxVScroll;
 		int cyHScroll;
 
+		bool isdbg;
+
 		CPanelContainerGlobals();
 		~CPanelContainerGlobals();
+
+		void SwapToDebug();
+		void SwapToNormal();
 	};
 
 	enum ObjectType : U8

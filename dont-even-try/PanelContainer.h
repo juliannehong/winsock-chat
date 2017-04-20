@@ -76,5 +76,7 @@ public:
 
 	U32 AddSeparator(U32 Parent, SeparatorType Type, float StartingDivision, bool LeftHandChild);
 	U32 AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool LeftHandChild);
+
+	void EnableDebugMode(bool Enable);
 };
 
