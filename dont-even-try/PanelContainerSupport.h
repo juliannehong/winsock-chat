@@ -121,9 +121,12 @@ namespace PanelContainer
 	{
 		U32 Flags;
 		float RelativePosition;
+		RECT rSeparator;
 		U32 Parent;
 		U32 Left;
+		RECT rLeft;
 		U32 Right;
+		RECT rRight;
 
 		Node() : Flags(0), RelativePosition(0), Left(InvalidNodeIndex), Right(InvalidNodeIndex)
 		{
