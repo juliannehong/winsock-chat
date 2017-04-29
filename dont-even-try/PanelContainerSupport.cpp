@@ -7,7 +7,8 @@ namespace PanelContainer
 		hsize(LoadCursor(nullptr, IDC_SIZEWE)),
 		vsize(LoadCursor(nullptr, IDC_SIZENS)),
 		cxVScroll(GetSystemMetrics(SM_CXVSCROLL)),
-		cyHScroll(GetSystemMetrics(SM_CYHSCROLL))
+		cyHScroll(GetSystemMetrics(SM_CYHSCROLL)),
+		isdbg(false)
 	{
 		WORD bits[8];
 		for(int i = 0; i < 8; i++)
@@ -18,18 +19,15 @@ namespace PanelContainer
 			HalftoneBrush = ::CreatePatternBrush(patt);
 			DeleteObject(patt);
 		}
-#if 1
 		//very visible borders (for debugging)
-		ButtonFace = CreateSolidBrush(RGB(255,0,0));
-		ButtonHilight = CreateSolidBrush(RGB(0, 255, 0));
-		ButtonShadow = CreateSolidBrush(RGB(0, 0, 255));
-		WindowFrame = CreateSolidBrush(RGB(255, 0, 255));
-#else
+		DbgButtonFace = CreateSolidBrush(RGB(255,0,0));
+		DbgButtonHilight = CreateSolidBrush(RGB(0, 255, 0));
+		DbgButtonShadow = CreateSolidBrush(RGB(0, 0, 255));
+		DbgWindowFrame = CreateSolidBrush(RGB(255, 0, 255));
 		ButtonFace = GetSysColorBrush(COLOR_BTNFACE);
 		ButtonHilight = GetSysColorBrush(COLOR_BTNHIGHLIGHT);
 		ButtonShadow = GetSysColorBrush(COLOR_BTNSHADOW);
 		WindowFrame = GetSysColorBrush(COLOR_WINDOWFRAME);
-#endif
 	}
 
 	CPanelContainerGlobals::~CPanelContainerGlobals()
@@ -43,6 +41,32 @@ namespace PanelContainer
 		DeleteObject(ButtonHilight);
 		DeleteObject(ButtonShadow);
 		DeleteObject(WindowFrame);
+		DeleteObject(DbgButtonFace);
+		DeleteObject(DbgButtonHilight);
+		DeleteObject(DbgButtonShadow);
+		DeleteObject(DbgWindowFrame);
 		DeleteObject(HalftoneBrush);
+	}
+	void CPanelContainerGlobals::SwapToDebug()
+	{
+		if(!isdbg)
+		{
+			std::swap(ButtonFace, DbgButtonFace);
+			std::swap(ButtonHilight, DbgButtonHilight);
+			std::swap(ButtonShadow, DbgButtonShadow);
+			std::swap(WindowFrame, DbgWindowFrame);
+			isdbg = true;
+		}
+	}
+	void CPanelContainerGlobals::SwapToNormal()
+	{
+		if(isdbg)
+		{
+			std::swap(ButtonFace, DbgButtonFace);
+			std::swap(ButtonHilight, DbgButtonHilight);
+			std::swap(ButtonShadow, DbgButtonShadow);
+			std::swap(WindowFrame, DbgWindowFrame);
+			isdbg = false;
+		}
 	}
 };

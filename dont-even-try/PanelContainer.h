@@ -46,20 +46,22 @@ class CPanelContainer :
 	RECT GetChildRect(U32 index, bool IsLeft) const;
 	RECT GetLimitRect(U32 index) const;
 
-	void ComputeBounds(const RECT & rBounds, PanelContainer::Node n, RECT & rSeparator, RECT & rLeft, RECT & rRight) const;
+
+	void RecomputeBounds_Rec(const RECT & rBounds, U32 Index);
+	void RecomputeBounds(const RECT & rBounds, PanelContainer::Node &n);
 
 	PanelContainer::ObjectID GetObjectAtPoint(POINT pt) const;
-	PanelContainer::ObjectID GetObjectAtPoint_Rec(POINT pt, U32 index, const RECT& currentbounds) const;
+	PanelContainer::ObjectID GetObjectAtPoint_Rec(POINT pt, U32 index) const;
 
 	void SetCursorFromTrackedObject(PanelContainer::ObjectID o) const;
 
 	U32 ConvertPointToIndex(POINT pt) const;
 
-	void RecomputeLayout();
-	void MovePanels_Rec(HDWP dwp, U32 index, const RECT& bounds);
+	void RecomputeLayout(U32 Index = 0);
+	void MovePanels_Rec(HDWP dwp, U32 index);
 
 	void DrawClientArea(HDC hdc) const;
-	void DrawClientAreaRec(HDC hdc, U32 currentindex, const RECT& currentbounds) const;
+	void DrawClientAreaRec(HDC hdc, U32 currentindex) const;
 	void DrawBorder(HDC hdc, const RECT& BorderRect, HBRUSH TopLeft, HBRUSH BottomRight) const;
 
 	void InvertTracker(RECT trackRect) const;
@@ -76,5 +78,7 @@ public:
 
 	U32 AddSeparator(U32 Parent, SeparatorType Type, float StartingDivision, bool LeftHandChild);
 	U32 AddPanel(U32 Parent, CObjectPtr<CWindow> NewPanel, bool LeftHandChild);
+
+	void EnableDebugMode(bool Enable);
 };
 

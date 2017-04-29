@@ -16,12 +16,22 @@ namespace PanelContainer
 		HBRUSH ButtonHilight;
 		HBRUSH ButtonShadow;
 		HBRUSH WindowFrame;
+		/* Debug brushes */
+		HBRUSH DbgButtonFace;
+		HBRUSH DbgButtonHilight;
+		HBRUSH DbgButtonShadow;
+		HBRUSH DbgWindowFrame;
 		HBRUSH HalftoneBrush;
 		int cxVScroll;
 		int cyHScroll;
 
+		bool isdbg;
+
 		CPanelContainerGlobals();
 		~CPanelContainerGlobals();
+
+		void SwapToDebug();
+		void SwapToNormal();
 	};
 
 	enum ObjectType : U8
@@ -111,9 +121,12 @@ namespace PanelContainer
 	{
 		U32 Flags;
 		float RelativePosition;
+		RECT rSeparator;
 		U32 Parent;
 		U32 Left;
+		RECT rLeft;
 		U32 Right;
+		RECT rRight;
 
 		Node() : Flags(0), RelativePosition(0), Left(InvalidNodeIndex), Right(InvalidNodeIndex)
 		{
