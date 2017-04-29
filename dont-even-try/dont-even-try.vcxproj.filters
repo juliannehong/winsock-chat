@@ -82,7 +82,7 @@
       <Filter>Source Files\Windowing\Framework\Support</Filter>
     </ClCompile>
     <ClCompile Include="EditControl.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Windowing\Standard Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +116,6 @@
     <ClInclude Include="StatusBar.h">
       <Filter>Header Files\Windowing\Standard Windows</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PanelContainer.h">
       <Filter>Header Files\Windowing\Framework</Filter>
     </ClInclude>
@@ -126,7 +123,10 @@
       <Filter>Header Files\Windowing\Framework\Support</Filter>
     </ClInclude>
     <ClInclude Include="EditControl.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Windowing\Standard Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

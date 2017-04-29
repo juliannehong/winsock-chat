@@ -69,8 +69,7 @@ void CMainWindow::ResizeChildWindows(RECT NewSize)
 	np.x = NewSize.left;
 	np.y = nsz.cy;
 	nsz.cy = stat->GetHeight();
-	stat->Move(np);
-	stat->Resize(nsz);
+	stat->ResizeAndMove(nsz, np);
 }
 
 void CMainWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
@@ -94,15 +93,13 @@ void CMainWindow::OnMenuItem(U32 MenuItemID, bool IsAccelerator)
 	}
 }
 
-CMainWindow::CMainWindow() : 
+CMainWindow::CMainWindow() :
 	cp(new CChatPanel(), true),
 	stat(new CStatusBar(), true),
 	edit1(new CEditControl(true), true),
 	edit2(new CEditControl(true), true),
 	edit3(new CEditControl(true), true)
 {
-	//AddChildWindow(new CChatPanel(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_TOP | LATCH_PARENT_LEFT);
-	//AddChildWindow(new CStatusBar(), XMFLOAT2(0,0), XMFLOAT2(0,0), LATCH_PARENT_LEFT | LATCH_PARENT_BOTTOM | FIXED_HEIGHT);
 }
 
 
